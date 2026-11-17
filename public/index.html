@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>9-Box Penalty</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f2b233'/%3E%3Cg fill='%23141006'%3E%3Crect x='6' y='6' width='5.5' height='5.5' rx='1'/%3E%3Crect x='13.25' y='6' width='5.5' height='5.5' rx='1'/%3E%3Crect x='20.5' y='6' width='5.5' height='5.5' rx='1'/%3E%3Crect x='6' y='13.25' width='5.5' height='5.5' rx='1'/%3E%3Crect x='13.25' y='13.25' width='5.5' height='5.5' rx='1'/%3E%3Crect x='20.5' y='13.25' width='5.5' height='5.5' rx='1'/%3E%3Crect x='6' y='20.5' width='5.5' height='5.5' rx='1'/%3E%3Crect x='13.25' y='20.5' width='5.5' height='5.5' rx='1'/%3E%3C/g%3E%3Crect x='20.5' y='20.5' width='5.5' height='5.5' rx='1' fill='%23fff'/%3E%3C/svg%3E">
+<script>try{const t=localStorage.getItem("9box-tema");if(t)document.documentElement.dataset.theme=t}catch{}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap">
+<style>
+/* Layout: painel escuro como o slide da empresa × Penalty. 9-box à esquerda, ranking do time à direita, ficha do consultor abaixo. */
+:root{
+  --bg:#0b0b0c; --surface:#151516; --surface-2:#1c1c1e; --line:#2b2b2e;
+  --fg:#f3f2ee; --muted:#9b9a95; --accent:#f2b233;
+  --good:#5fe39a; --good-bg:#15281d; --good-line:#2f7a4c;
+  --gold-bg:#382a10; --gold-line:#c9922a;
+  --mid-bg:#1c1c1e; --mid-line:#36363a;
+  --bad:#ff7a90; --bad-bg:#2a1217; --bad-line:#7a2433;
+  --on-accent:#141006; --chip-bg:rgba(0,0,0,.35); --chip-line:rgba(255,255,255,.16); --chip-hover:rgba(255,255,255,.08);
+  --font:"Lexend",ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+/* tema claro: pelo botão ou pelo sistema, quando o usuário não escolheu */
+:root[data-theme="light"]{
+  --bg:#f5f4ef; --surface:#ffffff; --surface-2:#f0eee8; --line:#dedbd2;
+  --fg:#17171a; --muted:#66655f; --accent:#9a6a08; --on-accent:#ffffff;
+  --good:#1d7f47; --good-bg:#e4f3ea; --good-line:#94cbab;
+  --gold-bg:#fbf0d6; --gold-line:#d6a43c;
+  --mid-bg:#f0eee8; --mid-line:#d4d1c8;
+  --bad:#b8283f; --bad-bg:#fbe7eb; --bad-line:#e49aa8;
+  --chip-bg:rgba(255,255,255,.7); --chip-line:rgba(0,0,0,.16); --chip-hover:rgba(0,0,0,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme]){
+  --bg:#f5f4ef; --surface:#ffffff; --surface-2:#f0eee8; --line:#dedbd2;
+  --fg:#17171a; --muted:#66655f; --accent:#9a6a08; --on-accent:#ffffff;
+  --good:#1d7f47; --good-bg:#e4f3ea; --good-line:#94cbab;
+  --gold-bg:#fbf0d6; --gold-line:#d6a43c;
+  --mid-bg:#f0eee8; --mid-line:#d4d1c8;
+  --bad:#b8283f; --bad-bg:#fbe7eb; --bad-line:#e49aa8;
+  --chip-bg:rgba(255,255,255,.7); --chip-line:rgba(0,0,0,.16); --chip-hover:rgba(0,0,0,.05);
+  color-scheme:light;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;font-weight:300}
+.wrap{max-width:1400px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px}
+.spot{display:block;height:26px;width:auto}
+/* logo branco: no tema claro vira preto */
+:root[data-theme="light"] .spot{filter:invert(1)}
+@media (prefers-color-scheme:light){:root:not([data-theme]) .spot{filter:invert(1)}}
+.ico{width:1em;height:1em;flex:none;vertical-align:-.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tema{display:inline-grid;place-items:center;width:32px;height:32px;padding:0;font-size:15px}
+.brand .sep{width:1px;height:26px;background:var(--line)}
+.penalty{font-weight:900;font-style:italic;letter-spacing:-.02em;font-size:17px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:500}
+nav.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+nav.tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;font-weight:500;font-size:14px;color:var(--muted);cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:var(--on-accent);font-weight:700}
+@media (max-width:520px){.controls{min-width:0;max-width:100%}nav.tabs{max-width:100%;box-sizing:border-box;min-width:0;overflow-x:auto;scrollbar-width:none}nav.tabs button{padding:6px 10px;font-size:13px;flex:none}}
+
+h1{font-size:clamp(28px,4.4vw,52px);font-weight:900;letter-spacing:-.035em;line-height:1.05;margin:28px 0 8px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--muted);max-width:68ch;margin:0 0 24px}
+
+.summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;display:flex;gap:8px;align-items:center}
+.pill b{font-weight:800}
+.pill.warn{border-color:var(--gold-line);color:var(--accent)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:980px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px}
+.panel h2{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 16px}
+
+/* 9-box */
+.nine{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px}
+.yaxis{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center}
+.cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cell{border:1px solid var(--mid-line);background:var(--mid-bg);border-radius:4px;padding:10px 12px 12px;min-height:150px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.cell .n{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.08em;display:flex;justify-content:space-between}
+.cell .who{display:flex;flex-wrap:wrap;gap:5px;flex:1;align-content:flex-start}
+.cell .nm{font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.15}
+.cell .nm .ico{margin-right:5px}
+.cell .nm{hyphens:auto;overflow-wrap:break-word}
+.cell.good{background:var(--good-bg);border-color:var(--good-line)} .cell.good .nm,.cell.good .n{color:var(--good)}
+.cell.gold{background:var(--gold-bg);border-color:var(--gold-line)} .cell.gold .nm,.cell.gold .n{color:var(--accent)}
+.cell.bad{background:var(--bad-bg);border-color:var(--bad-line)} .cell.bad .nm,.cell.bad .n{color:var(--bad)}
+.chip{border:1px solid var(--chip-line);background:var(--chip-bg);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-flex;align-items:baseline;min-width:0}
+.chip-nm{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chip-uf{flex:none;font-size:.85em;font-weight:800;letter-spacing:.04em;color:var(--muted);margin-left:6px}
+.chip:hover,.chip[aria-pressed="true"]{border-color:var(--fg);background:var(--chip-hover)}
+.xaxis{grid-column:2;text-align:center;border-top:1px solid var(--line);padding-top:10px}
+.xlabels{grid-column:2;display:grid;grid-template-columns:repeat(3,1fr);text-align:center;font-size:11px;color:var(--muted)}
+@media (max-width:560px){.cell{min-height:110px;padding:8px}.cell .nm{font-size:13px}.chip{font-size:11px;padding:1px 7px}}
+.pend{margin-top:16px;border:1px dashed var(--gold-line);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.pend .who{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ranking */
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 8px 10px;white-space:nowrap}
+td{padding:9px 8px;border-top:1px solid var(--line);white-space:nowrap}
+tr.row{cursor:pointer} tr.row:hover td{background:var(--surface-2)}
+tr.row[aria-selected="true"] td{background:var(--surface-2);box-shadow:inset 0 0 0 0 var(--accent)}
+td.r{text-align:right} th.r{text-align:right}
+.lvl{display:inline-grid;place-items:center;min-width:34px;height:24px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid var(--mid-line);color:var(--muted)}
+.lvl.good{color:var(--good);border-color:var(--good-line);background:var(--good-bg)}
+.lvl.gold{color:var(--accent);border-color:var(--gold-line);background:var(--gold-bg)}
+.lvl.bad{color:var(--bad);border-color:var(--bad-line);background:var(--bad-bg)}
+.lvl.na{border-style:dashed}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px}
+.t0{color:var(--bad);background:var(--bad-bg)} .t1{color:var(--muted);background:var(--surface-2)} .t2{color:var(--good);background:var(--good-bg)}
+.trend{font-size:12px;font-weight:700} .up{color:var(--good)} .down{color:var(--bad)} .same{color:var(--muted)}
+
+/* ficha */
+.ficha{margin-top:24px}
+.ficha-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.ficha h3{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:-.03em;margin:4px 0 0;line-height:1.1}
+.box-tag{font-weight:800;font-size:15px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:20px}
+@media (max-width:900px){.cols3{grid-template-columns:minmax(0,1fr)}}
+.cols4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.cols4 .label{margin-bottom:6px}
+@media (max-width:700px){.cols4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sub{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:16px;min-width:0}
+.sub h4{margin:0 0 12px;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.big{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.meter{position:relative;height:10px;background:var(--line);border-radius:99px;margin:14px 0 6px}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);opacity:.6}
+.acao{border-left:3px solid var(--accent);padding:10px 14px;background:var(--surface-2);margin-top:18px;border-radius:0 4px 4px 0}
+.acao.good{border-color:var(--good)} .acao.bad{border-color:var(--bad)} .acao.mid{border-color:var(--muted)}
+ul.subir{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.hist{display:flex;gap:8px;flex-wrap:wrap}
+.hist div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.feedback{white-space:pre-wrap;font-size:14px;margin:0}
+
+/* consultores: cartas, mapa e plano de recuperação */
+.uf{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.06em;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:6px;color:var(--muted);vertical-align:1px}
+.cgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:24px;align-items:start}
+@media (max-width:980px){.cgrid{grid-template-columns:minmax(0,1fr)}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:18px}
+@media (max-width:560px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .fut{min-height:230px;padding:10px 10px 22px}.fut .ovr{font-size:30px}.fut .av{width:42px;height:42px;font-size:15px}
+  .fut .nome{font-size:12.5px}.fut .attr{font-size:11px;gap:1px 8px}.fut .attr b{font-size:13px;min-width:18px}}
+.fut{--c1:#3a3d44;--c2:#24262b;--ink:#f3f2ee;--soft:rgba(255,255,255,.18);position:relative;border:0;padding:14px 14px 24px;cursor:pointer;text-align:left;color:var(--ink);
+  background:linear-gradient(160deg,var(--c1),var(--c2));clip-path:polygon(10% 0,90% 0,100% 5%,100% 90%,50% 100%,0 90%,0 5%);display:flex;flex-direction:column;gap:6px;min-height:262px}
+.fut.ouro{--c1:#f9e39a;--c2:#b8861f;--ink:#2a1c03;--soft:rgba(60,40,0,.2)}
+.fut.prata{--c1:#f1f3f5;--c2:#9aa1a9;--ink:#1b2026;--soft:rgba(0,10,20,.18)}
+.fut.bronze{--c1:#f0c49c;--c2:#9a6033;--ink:#2a1508;--soft:rgba(40,15,0,.2)}
+.fut.fora{filter:grayscale(1);opacity:.55}
+.fut[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--accent)}
+.fut:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--accent)}
+.fut .top{display:flex;justify-content:space-between;align-items:flex-start}
+.fut .ovr{font-size:38px;font-weight:900;line-height:.9;letter-spacing:-.04em}
+.fut .pos{font-size:12px;font-weight:800;letter-spacing:.08em;display:flex;gap:5px;align-items:center;margin-top:4px}
+.fut .ufb.casa{margin-left:4px;display:inline-flex;align-items:center;gap:3px;font-weight:700}
+.fut .ufb.casa svg{width:11px;height:11px}
+.fut .ufb{font-size:11px;font-weight:800;border:1.5px solid currentColor;border-radius:4px;padding:0 5px;margin-top:6px;display:inline-block}
+.fut .av{width:58px;height:58px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:900;font-size:20px;letter-spacing:-.02em}
+.fut .nome{font-weight:900;font-size:15px;letter-spacing:-.01em;text-transform:uppercase;text-align:center;border-bottom:1px solid var(--soft);padding-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fut .attr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;font-size:13px}
+.fut .attr span{display:flex;gap:6px;align-items:baseline} .fut .attr b{font-weight:900;font-size:15px;min-width:22px}
+/* as duas notas que definem a posição: performance (soma 0 a 4) e supervisor (média 1 a 5) */
+.fut .duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.fut .duo span{background:var(--soft);border-radius:6px;padding:4px 4px 5px;text-align:center;line-height:1.1;min-width:0}
+.fut .duo small{display:block;font-size:8.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.fut .duo b{display:block;font-size:17px;font-weight:900;margin:1px 0}
+.fut .duo b sub{font-size:10px;font-weight:700;opacity:.65;vertical-align:baseline}
+.fut .duo em{display:block;font-style:normal;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.85}
+@media (max-width:520px){.fut .duo b{font-size:15px}.fut .duo small{font-size:7.5px;letter-spacing:.04em}}
+.fut .rodape{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center;opacity:.8}
+.fut .olho{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:15px}
+.mapa{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:300px}
+.mapa .t{aspect-ratio:1;border-radius:4px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;padding:0}
+.mapa button.t{cursor:pointer;background:var(--gold-bg);border-color:var(--gold-line);color:var(--fg)}
+.mapa button.t b{font-size:14px;font-weight:900;color:var(--accent)}
+.mapa button.t[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)} .mapa button.t[aria-pressed="true"] b{color:var(--on-accent)}
+.mapa-svg{width:100%;max-width:340px;height:auto;display:block}
+.mapa-svg path{fill:var(--surface-2);stroke:var(--line);stroke-width:.8;stroke-linejoin:round}
+.mapa-svg .on path{fill:var(--gold-bg);stroke:var(--gold-line);stroke-width:1.2}
+.mapa-svg .on{cursor:pointer}
+.mapa-svg .on:hover path,.mapa-svg .on:focus-visible path{fill:var(--gold-line)}
+.mapa-svg .on[aria-pressed="true"] path{fill:var(--accent);stroke:var(--accent)}
+.mapa-svg .on:focus{outline:none}
+.mapa-svg circle{fill:var(--accent);stroke:var(--surface);stroke-width:3}
+.mapa-svg .on[aria-pressed="true"] circle{fill:var(--fg)}
+.mapa-svg text{font-family:var(--font);font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.mapa-svg .n{font-size:22px;fill:var(--on-accent)}
+.mapa-svg .on[aria-pressed="true"] .n{fill:var(--bg)}
+.mapa-svg .sg{font-size:17px;fill:var(--muted)}
+.legenda{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legenda i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.plano{border:1px solid var(--bad-line);background:var(--bad-bg);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.plano h3{margin:0;font-size:18px;font-weight:800;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.plano ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.acomp{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:700;color:var(--bad)}
+.fases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fases div{border:1px dashed var(--bad-line);border-radius:5px;padding:7px 8px;font-size:12px;color:var(--muted);line-height:1.35}
+.fases b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.fases .agora{border:2px solid var(--bad);color:var(--fg);background:var(--surface)}
+.fases .agora b{color:var(--bad)}
+.fases .feita{opacity:.6}
+.fases .feita b::after{content:" ✓"}
+@media (max-width:520px){.fases{grid-template-columns:minmax(0,1fr)}}
+.plano .venc{font-size:12.5px;font-weight:700;color:var(--bad)}
+/* fotos dos consultores */
+.fut .av{overflow:hidden}
+.fut .av img,.foto{width:100%;height:100%;object-fit:cover;display:block}
+.foto.fh{width:52px;height:52px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:10px;border:2px solid var(--line)}
+/* anual */
+th[aria-sort] .ord{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+th[aria-sort] .ord:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+th[aria-sort] .ord i{font-style:normal;font-size:9px;opacity:.35}
+th[aria-sort="ascending"] .ord,th[aria-sort="descending"] .ord{color:var(--accent)}
+th[aria-sort="ascending"] .ord i,th[aria-sort="descending"] .ord i{opacity:1}
+.mesgrid td.v{font-variant-numeric:tabular-nums}
+.mesgrid td.desl{color:var(--bad);font-weight:700;font-size:12px}
+/* regras simples */
+.lead{font-size:15.5px;line-height:1.5;margin:0 0 6px;max-width:62ch}
+.duas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+@media (max-width:720px){.duas{grid-template-columns:minmax(0,1fr)}}
+.bloco{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--surface-2);min-width:0}
+.bloco h3{margin:0 0 2px;font-size:15px;font-weight:800;display:flex;gap:8px;align-items:center}
+.bloco .de{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.ind{margin:8px 0}
+.ind>span{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.pts{display:flex;flex-wrap:wrap;gap:4px}
+.pts i{font-style:normal;font-size:12px;border:1px solid var(--mid-line);border-radius:999px;padding:2px 8px;color:var(--muted);white-space:nowrap}
+.pts i.g{color:var(--good);border-color:var(--good-line);background:var(--good-bg)}
+.pts i.b{color:var(--bad);border-color:var(--bad-line);background:var(--bad-bg)}
+.res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px}
+.res b{color:var(--fg)}
+.crit2{margin:4px 0 0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+details.mais{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+details.mais summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--accent)}
+details.mais p,details.mais li{font-size:13px;color:var(--muted)}
+.planos{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:16px}
+
+body.consultor #tab-time,body.consultor #tab-anual,body.consultor #tab-avaliar,body.consultor #importBtn{display:none}
+
+/* avaliar */
+.aval-grid{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.aval-grid{grid-template-columns:minmax(0,1fr)}}
+.lista{display:flex;flex-direction:column;gap:4px}
+.lista button{display:flex;justify-content:space-between;gap:8px;align-items:center;text-align:left;background:none;border:1px solid transparent;border-radius:6px;padding:8px 10px;cursor:pointer;font-size:14px}
+.lista button:hover{background:var(--surface-2)}
+.lista button[aria-current="true"]{border-color:var(--accent);background:var(--surface-2)}
+.ok{color:var(--good);font-size:12px;font-weight:700} .no{color:var(--accent);font-size:12px;font-weight:700}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:16px 0}
+legend{font-weight:700;font-size:16px;padding:0;float:left;width:100%}
+fieldset p{margin:4px 0 10px;color:var(--muted);font-size:13.5px;clear:both}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.scale label{border:1px solid var(--line);border-radius:6px;padding:8px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+.scale label b{font-size:18px;color:var(--fg);font-weight:800}
+.scale input{position:absolute;opacity:0;pointer-events:none}
+.scale input:checked+label{border-color:var(--accent);background:var(--gold-bg);color:var(--accent)}
+.scale input:checked+label b{color:var(--accent)}
+.scale input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+textarea{width:100%;min-height:96px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.media-prev{font-size:14px;color:var(--muted)} .media-prev b{color:var(--fg);font-weight:800}
+.msg{font-size:13px;font-weight:600}
+
+/* regras */
+.regras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:820px){.regras{grid-template-columns:minmax(0,1fr)}}
+.regras table td{white-space:normal;vertical-align:top}
+.passo{display:flex;gap:14px;padding:18px 0 4px;border-top:1px solid var(--line);margin-top:14px}
+.passo-n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:13px;display:grid;place-items:center}
+.passo-c{min-width:0;flex:1}
+.passo h3{font-size:15.5px;font-weight:700;margin:3px 0 6px}
+.passo h3 small{font-weight:400;color:var(--muted);font-size:13px}
+.faixas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+.faixa{border:1px solid var(--mid-line);background:var(--mid-bg);border-radius:6px;padding:8px 10px;font-size:12.5px;color:var(--muted)}
+.faixa b{display:block;font-size:13.5px;color:var(--fg)}
+.faixa.bad{border-color:var(--bad-line);background:var(--bad-bg)} .faixa.bad b{color:var(--bad)}
+.faixa.good{border-color:var(--good-line);background:var(--good-bg)} .faixa.good b{color:var(--good)}
+.exemplo{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:4px;padding:10px 12px;font-size:13px;margin:10px 0 4px}
+.crit{margin:8px 0 0;padding-left:20px;font-size:13.5px}
+.crit li{padding:5px 0;border-bottom:1px solid var(--line)} .crit li:last-child{border-bottom:0}
+.crit .note{display:block;font-size:12.5px}
+.mini9{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:4px;font-size:11.5px;margin-top:10px}
+.mini9 .ax{color:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:grid;place-items:center;text-align:center;padding:2px 4px}
+.m9{border:1px solid var(--mid-line);background:var(--mid-bg);border-radius:5px;padding:7px 4px;text-align:center;hyphens:manual;min-width:0;overflow-wrap:break-word}
+@media (max-width:520px){.passo{gap:10px}.passo-n{width:24px;height:24px;font-size:12px}.mini9{font-size:10.5px;gap:3px}.m9{padding:6px 2px}.mini9 .ax{font-size:9.5px;padding:2px}}
+.m9 b{display:block;font-size:12px}
+.m9.bad{border-color:var(--bad-line);background:var(--bad-bg)} .m9.bad b{color:var(--bad)}
+.m9.good{border-color:var(--good-line);background:var(--good-bg)} .m9.good b{color:var(--good)}
+.m9.gold{border-color:var(--gold-line);background:var(--gold-bg)} .m9.gold b{color:var(--accent)}
+.note{color:var(--muted);font-size:13.5px;max-width:70ch}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+/* login */
+#loginGate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#loginGate .box{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:32px 28px}
+#loginGate h1{font-size:30px;margin:22px 0 4px}
+#loginGate p{color:var(--muted);font-size:13.5px;margin:0 0 18px}
+#loginGate label{display:block;margin:14px 0 6px}
+#loginGate input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+#loginGate .btn{width:100%;margin-top:20px;padding:12px}
+#loginGate .err{color:var(--bad);font-size:13px;margin-top:12px;min-height:18px}
+.userbox{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)}
+.ghost{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.ghost:hover{border-color:var(--fg)}
+@media (prefers-reduced-motion:no-preference){.chip,.lista button,tr.row td{transition:background .15s,border-color .15s}}
+</style>
+</head>
+<body>
+<div id="loginGate" hidden>
+  <form class="box" id="loginForm">
+    <div class="brand" aria-label="da empresa e Penalty">
+      <img class="spot" src="spot-logo.png" alt="da empresa" width="113" height="26">
+      <div class="sep"></div>
+      <div class="penalty">PENALTY</div>
+    </div>
+    <h1>9-Box Penalty</h1>
+    <p>Avaliação mensal dos consultores. Entre com o e-mail e a senha liberados pela equipe da empresa.</p>
+    <label class="label" for="loginEmail">E-mail</label>
+    <input type="email" id="loginEmail" required autocomplete="username" spellcheck="false">
+    <label class="label" for="loginPassword">Senha</label>
+    <input type="password" id="loginPassword" required autocomplete="current-password">
+    <button class="btn" type="submit" id="loginBtn">Entrar</button>
+    <div class="err" id="loginErr" aria-live="polite"></div>
+  </form>
+</div>
+<div class="wrap" id="appRoot" hidden>
+  <header class="top">
+    <div class="brand" aria-label="da empresa e Penalty">
+      <img class="spot" src="spot-logo.png" alt="da empresa" width="113" height="26">
+      <div class="sep"></div>
+      <div class="penalty">PENALTY</div>
+    </div>
+    <div class="controls">
+      <label class="label" for="mes">Ciclo</label>
+      <select id="mes"></select>
+      <nav class="tabs" role="tablist">
+        <button role="tab" id="tab-time" aria-selected="true" data-tab="time">Time</button>
+        <button role="tab" id="tab-consultores" aria-selected="false" data-tab="consultores">Consultores</button>
+        <button role="tab" id="tab-anual" aria-selected="false" data-tab="anual">Anual</button>
+        <button role="tab" id="tab-avaliar" aria-selected="false" data-tab="avaliar">Avaliar</button>
+        <button role="tab" id="tab-regras" aria-selected="false" data-tab="regras">Regras</button>
+      </nav>
+      <div class="userbox">
+        <span id="userEmail"></span>
+        <label class="ghost" id="importBtn" hidden>Importar ciclos<input type="file" id="importFile" accept=".json,application/json" multiple hidden></label>
+        <button class="ghost tema" type="button" id="temaBtn" aria-label="Alternar tema claro e escuro"></button>
+        <button class="ghost" type="button" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <h1>9-Box Penalty: <em id="h1mes">avaliação mensal</em></h1>
+  <p class="lede">Cada consultor cai em uma das nove posições, cruzando a performance na Campanha de Incentivo com a avaliação do supervisor. Cada posição tem uma ação definida e mostra o que falta para subir de nível.</p>
+
+  <section id="v-time" role="tabpanel" aria-labelledby="tab-time">
+    <div class="summary" id="summary"></div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>9-box · <span id="boxmes"></span></h2>
+        <div class="nine">
+          <div class="yaxis label">Avaliação do supervisor</div>
+          <div class="cells" id="cells"></div>
+          <div class="xlabels"><span>Baixa</span><span>Média</span><span>Alta</span></div>
+          <div class="xaxis label">Performance na campanha</div>
+        </div>
+        <div class="pend" id="pend" hidden>
+          <span class="label" style="color:var(--accent)">Aguardando avaliação do supervisor</span>
+          <div class="who" id="pendwho"></div>
+        </div>
+        <div class="pend" id="desl" hidden>
+          <span class="label">Desligados · fora do 9-box e do ranking</span>
+          <div class="who" id="deslwho"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Ranking do time</h2>
+        <div class="tbl"><table>
+          <thead><tr><th>#</th><th>Consultor</th><th>Nível</th><th class="r">Efetiv.</th><th class="r">Pontos</th><th class="r">Superv.</th><th class="r">vs mês ant.</th></tr></thead>
+          <tbody id="rank"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="panel ficha" id="ficha" hidden></div>
+  </section>
+
+  <section id="v-consultores" role="tabpanel" aria-labelledby="tab-consultores" hidden>
+    <div class="cgrid">
+      <div class="panel">
+        <h2><span id="ctitulo">Cartas do time</span> · <span id="cmes"></span></h2>
+        <p class="note" style="margin-top:-6px" id="cnota">Atributos de 0 a 99: 50 é a média do time no mês e 99 é o melhor do time. Toque na carta para abrir a ficha.</p>
+        <div class="cards" id="cards"></div>
+      </div>
+      <div class="panel">
+        <h2 id="mtitulo">Onde o time atua</h2>
+        <div id="mapa" role="group" aria-label="Mapa do Brasil por estado"></div>
+        <p class="note" id="mapafiltro" style="font-size:12.5px;margin-top:10px"></p>
+        <div class="legenda">
+          <span><i style="background:linear-gradient(160deg,#f9e39a,#b8861f)"></i>Ouro: N7 a N9</span>
+          <span><i style="background:linear-gradient(160deg,#f1f3f5,#9aa1a9)"></i>Prata: N4 a N6</span>
+          <span><i style="background:linear-gradient(160deg,#f0c49c,#9a6033)"></i>Bronze: N1 a N3, com plano de recuperação</span>
+          <span><i style="background:linear-gradient(160deg,#3a3d44,#24262b)"></i>Sem avaliação do supervisor</span>
+        </div>
+      </div>
+    </div>
+    <div class="panel ficha" id="ficha2" hidden></div>
+    <div class="panel" style="margin-top:24px" id="planosPanel">
+      <h2>Plano de ação de 90 dias · supervisor acompanha de perto</h2>
+      <p class="note" style="margin-top:-6px">Consultores em N1, N2 e N3. O plano dura três ciclos: metas no 1º mês, acompanhamento no 2º e decisão no 3º. Sair de N1 a N3 encerra o plano.</p>
+      <div class="planos" id="planos"></div>
+    </div>
+  </section>
+
+  <section id="v-anual" role="tabpanel" aria-labelledby="tab-anual" hidden>
+    <div class="panel" id="anualPanel">
+      <h2>Campanha anual · <span id="anualmes"></span></h2>
+      <div class="tbl"><table>
+        <thead id="anualhead"></thead>
+        <tbody id="anual"></tbody>
+      </table></div>
+      <p class="note" style="font-size:12.5px;margin-top:10px">Soma de janeiro até o mês selecionado. Lojas = lojas diferentes da carteira no ano; dias trabalhados = dias com visita realizada; pontos por loja = pontos no ano ÷ lojas no ano. Toque no título da coluna para ordenar (de novo, inverte). Informativo: não muda a posição no 9-box.</p>
+    </div>
+    <div class="panel" style="margin-top:24px" id="mesPanel">
+      <h2>Pontos mês a mês · <span id="mesano"></span></h2>
+      <div class="tbl"><table class="mesgrid"><thead id="meshead"></thead><tbody id="mesbody"></tbody></table></div>
+      <p class="note" style="font-size:12.5px;margin-top:10px">Pontos da Campanha de Incentivo em cada mês. Em vermelho, o mês do desligamento ("Desl." quando ele saiu sem ter trabalhado no mês). "·" = não estava no time naquele mês. Desligados ficam no fim da lista.</p>
+    </div>
+    <div class="panel ficha" id="ficha3" hidden></div>
+  </section>
+
+  <section id="v-avaliar" role="tabpanel" aria-labelledby="tab-avaliar" hidden>
+    <div class="panel">
+      <h2>Formulário do supervisor · <span id="avmes"></span></h2>
+      <div class="aval-grid">
+        <div>
+          <div class="label" style="margin-bottom:8px" id="avcount"></div>
+          <div class="lista" id="avlista"></div>
+        </div>
+        <form id="avform" novalidate></form>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-regras" role="tabpanel" aria-labelledby="tab-regras" hidden>
+    <div class="regras" id="regras"></div>
+  </section>
+
+  <div class="empty" id="offline" hidden></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const CRITERIOS=[
+ // chave "postura" mantida para não invalidar avaliações já gravadas
+ {k:"postura",t:"Relacionamento e engajamento com o time da empresa e Penalty",c:"engajamento com o time da empresa e Penalty",d:"Chega no horário às reuniões? Compartilha fotos nos grupos de alinhamento? Responde às demandas solicitadas pelos grupos?"},
+ {k:"relacionamento",t:"Relacionamento com a loja",d:"Vínculo com gerente e vendedores; a loja abre espaço para as ações Penalty."},
+ {k:"rota",t:"Disciplina de rota",d:"Cumpre o roteiro, faz check-in e check-out, avisa ausências com antecedência."},
+ {k:"execucao",t:"Qualidade da execução",d:"Exposição no padrão, fotos nítidas, formulários completos e corretos."},
+ {k:"proatividade",t:"Proatividade",d:"Traz oportunidades de ponto extra e vitrine, resolve sem esperar ser cobrado."},
+];
+const ESCALA=["Muito abaixo","Abaixo","No esperado","Acima","Referência"];
+// grupos dos atributos da carta (valor = pontos da campanha do grupo: quantidade × peso)
+const GRUPOS=[
+ {k:"bpr",s:"BPR",t:"Boas práticas",itens:{bolaLimpa:1,bolaCalibrada:1,atacador:1,enchimento:1}},
+ {k:"exe",s:"EXE",t:"Execução",itens:{vitrine:10,pontoExtra:10,planograma:3}},
+ {k:"eng",s:"ENG",t:"Engajamento",itens:{compreGanhe:20,treinamento:3}}];
+const ptsGrupo=(g,y)=>Object.entries(g.itens).reduce((t,[k,p])=>t+p*(y.detalhe?.[k]||0),0);
+const DETALHE=[["bolaLimpa","Bola limpa"],["bolaCalibrada","Bola calibrada"],["atacador","Atacador"],["enchimento","Enchimento"],["vitrine","Vitrine"],["pontoExtra","Ponto extra"],["planograma","Planograma"],["compreGanhe","Compre e Ganhe"],["treinamento","Treinamento"],["extraTreinamento","Extra treinamento"]];
+// regras de corte
+const R={efet:[0.89,0.95],prod:[0.6,1.2],sup:[3,4]};
+const BAND=["Baixa","Média","Alta"];
+// BOX[sup][perf]
+const BOX=[
+ [{n:1,nome:"Plano de recuperação",tom:"bad",acao:"Plano de ação de 90 dias com metas de efetividade e pontos e acompanhamento semanal em campo. Sem evolução ao fim dos 90 dias, a permanência é revista."},
+  {n:2,nome:"Atenção",tom:"bad",acao:"Feedback formal sobre os critérios mais baixos da avaliação e plano de ação de 90 dias. Supervisor acompanha pelo menos uma rota por mês."},
+  {n:3,nome:"Talento a lapidar",tom:"bad",acao:"Entrega resultado, mas a conduta está abaixo do padrão. Conversa franca sobre comportamento e plano de ação de 90 dias com acordo de padrões, revisado todo mês."}],
+ [{n:4,nome:"Em desenvolvimento",tom:"mid",acao:"Plano de desenvolvimento com o supervisor focado em efetividade e produtividade. Reciclagem de execução e acompanhamento quinzenal."},
+  {n:5,nome:"Elenco",tom:"mid",acao:"Mantém o padrão. Metas claras do mês e feedback mensal, com foco no indicador mais fraco para chegar a Titular."},
+  {n:7,nome:"Titular",tom:"good",acao:"Resultado forte. Feedback sobre os critérios de comportamento para chegar a Lenda e reconhecimento no time."}],
+ [{n:6,nome:"Promessa",tom:"good",acao:"Comportamento acima do esperado, resultado ainda baixo. Revisar rota e carteira de lojas, treino prático de execução e acompanhamento semanal dos pontos."},
+  {n:8,nome:"Craque",tom:"good",acao:"Mais autonomia e desafios: meta individual de pontos acima da média e apoio em treinamentos de colegas."},
+  {n:9,nome:"Lenda",tom:"gold",acao:"Referência do time. Reconhecimento público, papel de multiplicador em treinamentos e prioridade em lojas e projetos estratégicos."}],
+];
+// ícones (traço, 24×24)
+const IC={
+ 1:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M5.6 5.6l3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
+ 2:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+ 3:'<path d="M6 4h12l4 5-10 11L2 9z"/><path d="M2 9h20M12 20 8 9l2-5M12 20l4-11-2-5"/>',
+ 4:'<path d="M3 20h18M6 20v-5M11 20V10M16 20V6"/>',
+ 5:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.5 3.5 5.2"/>',
+ 6:'<path d="M12 21v-9"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7zM12 14c0-3-2.5-5-7-5 0 3 2.5 5 7 5z"/>',
+ 7:'<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3l-5.5 2.9 1-6.2L3 9.6l6.2-.9z"/>',
+ 8:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+ 9:'<path d="M3 18h18M4 8l4 4 4-7 4 7 4-4-1.5 10h-13z"/>',
+ casa:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+ olho:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+ sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+ lua:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+};
+const ico=(k,cls="")=>`<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
+// supervisor acompanha mais de perto nas posições de recuperação
+// plano de ação de 90 dias (N1 a N3): uma fase por ciclo
+const PLANO=[{t:"Dias 1 a 30",n:"Metas",d:"Conversa formal e metas do plano por escrito."},
+ {t:"Dias 31 a 60",n:"Acompanhamento",d:"Supervisor em campo; revisão das metas."},
+ {t:"Dias 61 a 90",n:"Decisão",d:"Atingiu: sai do plano. Não atingiu: permanência revista."}];
+// meses seguidos em N1 a N3 até o ciclo selecionado (1 = começou agora)
+function mesesNoPlano(id){
+  let n=0;
+  for(const m of MESES().filter(k=>k<=S.mes).reverse()){
+    const y=calc(m).find(z=>z.id===id);
+    if(y?.box&&ACOMP[y.box.n]) n++; else break;
+  }
+  return n;
+}
+const ACOMP={1:"Semanal, em campo",2:"Semanal, com 1 rota acompanhada no mês",3:"Quinzenal, conversa sobre conduta"};
+// grade do Brasil por UF [coluna, linha]
+const MAPA={RR:[1,0],AP:[2,0],AM:[0,1],PA:[1,1],MA:[2,1],CE:[3,1],RN:[4,1],AC:[0,2],RO:[1,2],TO:[2,2],PI:[3,2],PB:[4,2],
+ MT:[1,3],GO:[2,3],BA:[3,3],PE:[4,3],AL:[5,3],MS:[1,4],DF:[2,4],MG:[3,4],SE:[4,4],PR:[1,5],SP:[2,5],RJ:[3,5],ES:[4,5],SC:[1,6],RS:[1,7]};
+const tier=x=>x.desligado?"fora":!x.box?"":x.box.n>=7?"ouro":x.box.n>=4?"prata":"bronze";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct=v=>v==null?"–":(v*100).toFixed(1).replace(".",",")+"%";
+const fmt=v=>Math.round(v).toLocaleString("pt-BR");
+const dec=v=>v.toFixed(1).replace(".",",");
+// tempo de casa até o fim do mês do ciclo (admissão = bi_d_pessoa.DTA_ADMISSAO)
+function casa(x,mes){
+  if(!x.admissao) return null;
+  const a=new Date(x.admissao+"T00:00:00"), [y,m]=ultimoMes(mes||S.mes).split("-").map(Number), fim=new Date(y,m,0);
+  if(a>fim) return null;
+  let meses=(fim.getFullYear()-a.getFullYear())*12+fim.getMonth()-a.getMonth(); if(fim.getDate()<a.getDate()) meses--;
+  const anos=Math.floor(meses/12), r=meses%12, dias=Math.round((fim-a)/864e5)+1;
+  const longo=meses<1?`${dias} dia${dias>1?"s":""}`:[anos?`${anos} ano${anos>1?"s":""}`:"",r?`${r} ${r>1?"meses":"mês"}`:""].filter(Boolean).join(" e ");
+  const curto=meses<1?`${dias}d`:anos?`${anos}a${r?" "+r+"m":""}`:`${r}m`;
+  return {meses,longo,curto,desde:a.toLocaleDateString("pt-BR")};
+}
+const pc=v=>String(Math.round(v*1000)/10).replace(".",",")+"%";
+const ufTag=x=>x.uf?`<span class="uf" title="${esc((x.ufs||[x.uf]).join(", "))}">${esc(x.uf)}</span>`:"";
+const curto=n=>{const p=n.split(" ");return p.length>1?p[0]+" "+p[p.length-1]:n};
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const band=(v,[a,b])=>v<a?0:v<b?1:2;
+
+const S={ciclos:{},aval:{},fotos:{},mes:null,sel:null,tab:"time",avSel:null,canWrite:null,meId:null,user:null,profiles:{}};
+
+// meses de verdade (sem os ciclos virtuais "AAAA-ano")
+const MESES=()=>Object.keys(S.ciclos).filter(k=>!S.ciclos[k].anual).sort();
+// último mês de verdade do ciclo selecionado (no "Ano · geral", o mês mais recente do ano)
+const ultimoMes=(m=S.mes)=>S.ciclos[m]?.anual?S.ciclos[m].meses.at(-1):m;
+// Ano · geral: soma o ano inteiro de cada consultor. Efetividade = realizado ÷ planejado de janeiro em diante
+// (campo ano.efetividade do último mês dele); supervisor = média das avaliações do ano.
+function montarAnos(){
+  for(const k of Object.keys(S.ciclos)) if(S.ciclos[k].anual) delete S.ciclos[k];
+  if(S.modo==="consultor") return;
+  const porAno={};
+  for(const m of MESES()) (porAno[m.slice(0,4)]=porAno[m.slice(0,4)]||[]).push(m);
+  for(const [ano,ms] of Object.entries(porAno)){
+    const P={};
+    for(const m of ms) for(const x of S.ciclos[m].consultores||[]) (P[x.id]=P[x.id]||[]).push(x);
+    const consultores=Object.values(P).map(E=>{
+      const u=E.at(-1), A=E.filter(y=>!y.semAtividade), saiu=E.find(y=>y.desligado), det={};
+      for(const y of A) for(const [k,v] of Object.entries(y.detalhe||{})) det[k]=(det[k]||0)+v;
+      const dias=A.reduce((t,y)=>t+(y.diasTrabalhados||0),0);
+      const efW=A.filter(y=>y.efetividade!=null), efMed=efW.length?efW.reduce((t,y)=>t+y.efetividade*(y.diasTrabalhados||1),0)/efW.reduce((t,y)=>t+(y.diasTrabalhados||1),0):null;
+      const ult=[...A].reverse().find(y=>y.ano)?.ano;
+      return {id:u.id,nome:u.nome,admissao:u.admissao,uf:u.uf,ufs:u.ufs,detalhe:det,diasTrabalhados:dias,
+        pts:A.reduce((t,y)=>t+y.pts,0),penalidadeEfetividade:A.reduce((t,y)=>t+(y.penalidadeEfetividade||0),0),
+        efetividade:ult?.efetividade??efMed,lojas:ult?.lojas??u.lojas,ano:ult,
+        ...(saiu?{desligado:true,demissao:saiu.demissao}:{})};
+    });
+    S.ciclos[ano+"-ano"]={mes:ano+"-ano",anual:true,meses:ms,rotulo:`Ano ${ano} · geral`,fonte:S.ciclos[ms.at(-1)].fonte,consultores};
+  }
+}
+// avaliação do ano: média de cada critério nos meses avaliados
+function avalAno(c,id){
+  const V=c.meses.map(m=>S.aval[m+"__"+id]).filter(a=>a?.notas&&CRITERIOS.every(k=>a.notas[k.k]>=1));
+  if(!V.length) return null;
+  const notas=Object.fromEntries(CRITERIOS.map(k=>[k.k,V.reduce((t,a)=>t+a.notas[k.k],0)/V.length]));
+  const u=V.at(-1);
+  return {notas,mesesAvaliados:V.length,feedback:u.feedback,avaliador:u.avaliador,atualizadoEm:u.atualizadoEm};
+}
+function calc(mes){
+  const c=S.ciclos[mes]; if(!c) return [];
+  // desligados ficam fora da média, do 9-box e do ranking
+  const L=c.consultores||[], at=L.filter(x=>!x.desligado); const media=c.media??at.reduce((s,x)=>s+x.pts,0)/(at.length||1);
+  return L.map(x=>{
+    const ratio=media?x.pts/media:0;
+    const eN=x.efetividade==null?0:band(x.efetividade,R.efet), pN=band(ratio,R.prod);
+    const soma=eN+pN, perf=soma<=1?0:soma===2?1:2;
+    const a=c.anual?avalAno(c,x.id):S.aval[mes+"__"+x.id]; let sup=null,supB=null;
+    if(a&&a.notas){const v=CRITERIOS.map(k=>a.notas[k.k]).filter(n=>n>=1); if(v.length===CRITERIOS.length){sup=v.reduce((s,n)=>s+n,0)/v.length; supB=band(sup,R.sup);}}
+    const box=supB==null||x.desligado?null:BOX[supB][perf];
+    const perfIdx=(clamp(((x.efetividade??0)-0.75)/0.25)+clamp(ratio/2))/2;
+    const geral=sup==null?perfIdx*100:(perfIdx*50+((sup-1)/4)*50);
+    return {...x,media,ratio,eN,pN,soma,perf,a,sup,supB,box,geral};
+  });
+}
+function ordenar(L){return [...L].sort((a,b)=>(b.box?1:0)-(a.box?1:0)||(b.box?.n??0)-(a.box?.n??0)||b.geral-a.geral)}
+function mesAnterior(m){const k=MESES();const i=k.indexOf(m);return i>0?k[i-1]:null}
+
+function render(){
+  const sel=$("#mes"), opt=m=>`<option value="${m}"${m===S.mes?" selected":""}>${esc(S.ciclos[m].rotulo||m)}</option>`;
+  const anos=[...new Set(MESES().map(m=>m.slice(0,4)))].sort().reverse();
+  sel.innerHTML=anos.map(a=>(S.ciclos[a+"-ano"]?opt(a+"-ano"):"")+MESES().filter(m=>m.startsWith(a)).reverse().map(opt).join("")).join("");
+  document.body.classList.toggle("anual",!!S.ciclos[S.mes]?.anual);
+  if(!S.mes){ $("#offline").hidden=false; return; }
+  $("#offline").hidden=true;
+  const c0=S.ciclos[S.mes], rot=c0.anual?`ano ${S.mes.slice(0,4)} (jan a ${(S.ciclos[c0.meses.at(-1)].rotulo||"").slice(0,3).toLowerCase()})`:(c0.rotulo||S.mes);
+  $("#h1mes").textContent=rot.toLowerCase(); $("#boxmes").textContent=rot; $("#avmes").textContent=rot;
+  $("#cmes").textContent=rot;
+  renderTime(); renderConsultores(); renderAvaliar(); renderRegras();
+}
+
+function renderTime(){
+  const T=calc(S.mes), L=T.filter(x=>!x.desligado), D=T.filter(x=>x.desligado), O=ordenar(L);
+  const prev=mesAnterior(S.mes), P=prev?Object.fromEntries(calc(prev).map(x=>[x.id,x])):{};
+  const aval=L.filter(x=>x.box).length;
+  const media=L[0]?.media||0;
+  const efMed=L.filter(x=>x.efetividade!=null).reduce((s,x,_,a)=>s+x.efetividade/a.length,0);
+  $("#summary").innerHTML=
+    `<span class="pill"><b class="num">${L.length}</b> consultores</span>`+
+    `<span class="pill${aval<L.length?" warn":""}"><b class="num">${aval}/${L.length}</b> avaliados pelo supervisor</span>`+
+    `<span class="pill">Média de pontos <b class="num">${fmt(media)}</b></span>`+
+    `<span class="pill">Efetividade média <b class="num">${pct(efMed)}</b></span>`+
+    `<span class="pill">Fonte: ${esc(S.ciclos[S.mes].fonte||"Campanha de Incentivo")}</span>`;
+  // células, de cima (sup alta) para baixo
+  let h="";
+  for(let s=2;s>=0;s--) for(let p=0;p<3;p++){
+    const b=BOX[s][p], quem=L.filter(x=>x.box===b);
+    h+=`<div class="cell ${b.tom}"><div class="n"><span>N${b.n}</span><span class="num">${quem.length||""}</span></div><div class="who">${quem.map(x=>chip(x)).join("")}</div><div class="nm">${ico(b.n)}${b.nome}</div></div>`;
+  }
+  $("#cells").innerHTML=h;
+  const pend=L.filter(x=>!x.box);
+  $("#pend").hidden=!pend.length;
+  $("#pendwho").innerHTML=pend.map(x=>chip(x,`Perf. ${BAND[x.perf].toLowerCase()}`)).join("");
+  $("#desl").hidden=!D.length;
+  $("#deslwho").innerHTML=D.map(x=>chip(x,"Desligado em "+dt(x.demissao))).join("");
+  // ranking
+  $("#rank").innerHTML=O.map((x,i)=>{
+    const q=P[x.id]; let tr="<span class='same'>–</span>";
+    if(q?.box&&x.box){const d=x.box.n-q.box.n; tr=d>0?`<span class="trend up">▲ N${q.box.n}→N${x.box.n}</span>`:d<0?`<span class="trend down">▼ N${q.box.n}→N${x.box.n}</span>`:`<span class="trend same">= N${x.box.n}</span>`;}
+    return `<tr class="row" tabindex="0" data-id="${x.id}" aria-selected="${S.sel===x.id}"><td class="num">${x.box?i+1:"–"}</td><td>${esc(curto(x.nome))}${ufTag(x)}</td><td>${lvl(x)}</td>`+
+      `<td class="r num"><span class="tag t${x.eN}">${pct(x.efetividade)}</span></td><td class="r num"><span class="tag t${x.pN}">${fmt(x.pts)}</span></td>`+
+      `<td class="r num">${x.sup==null?"<span class='no'>pendente</span>":dec(x.sup)}</td><td class="r">${tr}</td></tr>`;
+  }).join("");
+  renderAnual(T);
+  renderFicha(T,"#ficha");
+}
+function nota(v){return Math.max(0,Math.min(99,Math.round(v)))}
+function atributos(x,L){
+  const at=L.filter(y=>!y.desligado);
+  // 50 = média do time no mês, 99 = o melhor do time; abaixo da média, proporcional de 0 a 50
+  // (no login do consultor, média e máximo do time vêm no documento dele)
+  const c=S.ciclos[S.mes], mx=c?.maximos, md=c?.medias;
+  const rel=(f,k)=>{
+    const m=mx?.[k]??Math.max(1,...at.map(f)), a=md?.[k]??(at.reduce((t,y)=>t+f(y),0)/(at.length||1)), v=f(x);
+    return nota(v<=a?50*v/(a||1):50+49*(v-a)/((m-a)||1));
+  };
+  return [["EFE",x.efetividade==null?"–":nota(x.efetividade*100),"Efetividade"],["PTS",rel(y=>Math.max(0,y.pts),"pts"),"Pontos na campanha"],
+    ...GRUPOS.map(g=>[g.s,rel(y=>ptsGrupo(g,y),g.k),`${g.t}: ${Object.keys(g.itens).map(k=>DETALHE.find(d=>d[0]===k)[1].toLowerCase()).join(", ")}`]),
+    ["SUP",x.sup==null?"–":nota(x.sup/5*99),"Avaliação do supervisor"]];
+}
+const dt=d=>d?d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4):"";
+// foto do consultor (fotos/{id}, gravada por publicar_ciclos.js a partir de fotos.json)
+const foto=(x,c="")=>S.fotos[x.id]?`<img class="foto ${c}" src="${esc(S.fotos[x.id])}" alt="">`:"";
+const iniciais=n=>{const p=n.split(" ").filter(Boolean);return (p[0][0]+(p.length>1?p[p.length-1][0]:"")).toUpperCase()};
+function carta(x,L){
+  const b=x.box, t=tier(x);
+  return `<button type="button" class="fut ${t}" data-id="${x.id}" aria-pressed="${S.sel===x.id}" aria-label="${esc(x.nome)}${x.uf?", "+esc(x.uf):""}, nota ${nota(x.geral)}${b?", N"+b.n+" "+b.nome:""}">
+    ${b&&ACOMP[b.n]?`<span class="olho" title="Supervisor acompanha de perto">${ico("olho")}</span>`:""}
+    <div class="top"><div><div class="ovr num">${nota(x.geral)}</div>
+      <div class="pos">${b?ico(b.n)+"N"+b.n:x.desligado?"DESL.":"?"}</div>${x.uf?`<span class="ufb">${esc(x.uf)}</span>`:""}${casa(x)?`<span class="ufb casa" title="Tempo de casa: ${casa(x).longo} (desde ${casa(x).desde})">${ico("casa")}${casa(x).curto}</span>`:""}</div>
+      <div class="av" aria-hidden="true">${foto(x)||esc(iniciais(x.nome))}</div></div>
+    <div class="nome">${esc(curto(x.nome))}</div>
+    <div class="duo">
+      <span title="Performance na campanha: efetividade (0 a 2) + pontos comparados à média do time (0 a 2)"><small>Performance</small><b class="num">${x.soma}<sub>/4</sub></b><em>${BAND[x.perf]}</em></span>
+      <span title="Avaliação do supervisor: média dos ${CRITERIOS.length} critérios, de 1 a 5"><small>Supervisor</small><b class="num">${x.sup==null?"–":dec(x.sup)}${x.sup==null?"":"<sub>/5</sub>"}</b><em>${x.sup==null?"pendente":BAND[x.supB]}</em></span>
+    </div>
+    <div class="attr">${atributos(x,L).map(([k,v,t])=>`<span title="${t}"><b class="num">${v}</b>${k}</span>`).join("")}</div>
+    <div class="rodape">${x.desligado?"Desligado em "+dt(x.demissao).slice(0,5):b?esc(b.nome):"Aguardando supervisor"}</div></button>`;
+}
+// contorno dos estados (IBGE, gerado por gerar_mapa.py)
+let GEO=null;
+fetch("brasil-uf.json").then(r=>r.ok?r.json():null).then(g=>{GEO=g;if(S.mes)renderConsultores()}).catch(()=>{});
+// rótulo fora do estado quando ele é pequeno demais para o número
+const DESLOCA={DF:[0,-40],GO:[-20,20],ES:[50,10],RJ:[30,44],SC:[46,10],PR:[-10,0]};
+// estados pequenos do litoral do Nordeste: rótulos empilhados numa coluna ao lado da costa
+const COLUNA={RN:[598,112],PB:[598,158],PE:[598,204],AL:[598,250],SE:[598,296]};
+function mapaSVG(porUF){
+  const [,, W, H]=GEO.viewBox.split(" ").map(Number);
+  let fundo="", ativos="";
+  for(const [u,d] of Object.entries(GEO.uf)){
+    const q=porUF[u]||[];
+    if(!q.length){fundo+=`<g><path d="${d}"/></g>`;continue}
+    const [cx,cy]=GEO.centro[u], [dx,dy]=COLUNA[u]?[COLUNA[u][0]-cx,COLUNA[u][1]-cy]:DESLOCA[u]||[0,0], x=cx+dx, y=cy+dy;
+    ativos+=`<g class="on" data-uf="${u}" role="button" tabindex="0" aria-pressed="${S.uf===u}" aria-label="${u}: ${q.length} consultor${q.length>1?"es":""}"><title>${u}: ${q.map(x=>esc(x.nome)).join(", ")}</title><path d="${d}"/>`+
+      (dx||dy?`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--accent)" stroke-width="2"/>`:"")+
+      `<circle cx="${x}" cy="${y}" r="17"/><text class="n" x="${x}" y="${y}">${q.length}</text><text class="sg" x="${x}" y="${y+30}">${u}</text></g>`;
+  }
+  return `<svg class="mapa-svg" viewBox="-4 -4 ${W+30} ${H+12}" aria-hidden="false">${fundo}${ativos}</svg>`;
+}
+function renderConsultores(){
+  const T=calc(S.mes);
+  const porUF={}; T.filter(x=>!x.desligado).forEach(x=>(x.ufs?.length?x.ufs:[x.uf]).filter(Boolean).forEach(u=>(porUF[u]=porUF[u]||[]).push(x)));
+  if(S.uf&&!porUF[S.uf]) S.uf=null;
+  let m="";
+  if(GEO) m=mapaSVG(porUF);
+  else for(let r=0;r<8;r++) for(let c=0;c<6;c++){
+    const u=Object.keys(MAPA).find(k=>MAPA[k][0]===c&&MAPA[k][1]===r);
+    if(!u){m+=`<span aria-hidden="true"></span>`;continue}
+    const q=porUF[u]||[];
+    m+=q.length?`<button type="button" class="t" data-uf="${u}" aria-pressed="${S.uf===u}" title="${q.map(x=>esc(x.nome)).join(", ")}">${u}<b class="num">${q.length}</b></button>`:`<span class="t">${u}</span>`;
+  }
+  $("#mapa").className=GEO?"":"mapa"; $("#mapa").innerHTML=m;
+  const nUF=Object.keys(porUF).length;
+  $("#mapafiltro").innerHTML=!nUF?"Este ciclo ainda não tem o estado dos consultores.":S.uf?`Mostrando ${porUF[S.uf].length} em ${S.uf}. <button type="button" class="ghost" data-uf="">Ver todos</button>`:`${nUF} estados. Toque num estado para filtrar as cartas.`;
+  const ordemT={ouro:0,prata:1,bronze:2,"":3,fora:4};
+  const V=T.filter(x=>!S.uf||(x.ufs||[x.uf]).includes(S.uf)).sort((a,b)=>ordemT[tier(a)]-ordemT[tier(b)]||(b.box?.n??0)-(a.box?.n??0)||b.geral-a.geral);
+  $("#cards").innerHTML=V.map(x=>carta(x,T)).join("")||`<p class="note">Ninguém neste estado no ciclo.</p>`;
+  // plano de recuperação: N1 a N3, com o supervisor acompanhando de perto
+  const P=T.filter(x=>x.box&&ACOMP[x.box.n]).sort((a,b)=>a.box.n-b.box.n);
+  $("#planosPanel").hidden=!P.length;
+  $("#planos").innerHTML=P.map(x=>{
+    const metas=[];
+    if(x.efetividade!=null&&x.eN===0) metas.push(`Efetividade de ${pct(x.efetividade)} para <b>89%</b> (abaixo disso a campanha desconta 10 pontos)`);
+    if(x.pN===0) metas.push(`Pontos de ${fmt(x.pts)} para <b>${fmt(Math.ceil(R.prod[0]*x.media))}</b> (0,6× a média do time)`);
+    if(x.supB===0){const baixos=CRITERIOS.map(k=>({...k,v:x.a.notas[k.k]})).sort((a,b)=>a.v-b.v).slice(0,2);
+      metas.push(`Média do supervisor de ${dec(x.sup)} para <b>3,0</b>, trabalhando ${baixos.map(b=>`${b.c||b.t.toLowerCase()} (${b.v})`).join(" e ")}`);}
+    if(!metas.length) metas.push(...paraSubir(x));
+    return `<div class="plano"><h3>${ico(x.box.n)} ${esc(curto(x.nome))}${ufTag(x)} <span class="lvl bad">N${x.box.n}</span></h3>
+      <div class="note" style="margin:0">${esc(x.box.acao)}</div>
+      <div><div class="label" style="margin-bottom:6px">Metas do plano</div><ul>${metas.map(t=>`<li>${t}</li>`).join("")}</ul></div>
+      <div class="acomp">${ico("olho")} Supervisor acompanha de perto: ${ACOMP[x.box.n].toLowerCase()}</div>
+      ${(()=>{const f=mesesNoPlano(x.id), k=Math.min(f,3)-1, ms=MESES().filter(m=>m<=S.mes), ini=ms[ms.length-f];
+        return `<div><div class="label" style="margin-bottom:6px">Plano de 90 dias · ${f>3?"prazo encerrado":`mês ${f} de 3`}${ini?` · desde ${esc((S.ciclos[ini].rotulo||ini).toLowerCase())}`:""}</div>
+        <div class="fases">${PLANO.map((p,i)=>`<div class="${i<k?"feita":i===k?"agora":""}"><b>${p.t}</b><strong style="font-weight:700">${p.n}</strong><br>${p.d}</div>`).join("")}</div>
+        ${f>3?`<div class="venc" style="margin-top:6px">${f} meses seguidos em N1 a N3: o prazo de 90 dias passou, a permanência deve ser revista.</div>`:""}</div>`})()}
+      <button type="button" class="ghost" data-id="${x.id}" style="align-self:flex-start">Abrir ficha</button></div>`;
+  }).join("");
+  renderFicha(T,"#ficha2");
+}
+function renderMeses(){
+  const ano=S.mes.slice(0,4), ms=MESES().filter(m=>m.startsWith(ano)&&m<=S.mes);
+  $("#mesano").textContent=ano;
+  const ab=m=>(S.ciclos[m].rotulo||m).slice(0,3);
+  $("#meshead").innerHTML=`<tr><th>Consultor</th>${ms.map(m=>`<th class="r">${esc(ab(m))}</th>`).join("")}<th class="r">Total</th></tr>`;
+  const P={};
+  for(const m of ms) for(const x of S.ciclos[m].consultores||[]){const q=P[x.id]=P[x.id]||{x,m:{}};q.x=x;q.m[m]=x}
+  const mx=Object.fromEntries(ms.map(m=>[m,Math.max(1,...(S.ciclos[m].consultores||[]).map(x=>x.pts))]));
+  const R=Object.values(P).map(q=>({...q,tot:ms.reduce((t,m)=>t+(q.m[m]&&!q.m[m].semAtividade?q.m[m].pts:0),0),saiu:Object.values(q.m).some(y=>y.desligado)}))
+    .sort((a,b)=>a.saiu-b.saiu||b.tot-a.tot);
+  $("#mesbody").innerHTML=R.map(q=>`<tr class="row" tabindex="0" data-id="${q.x.id}" aria-selected="${S.sel===q.x.id}"><td>${esc(curto(q.x.nome))}${ufTag(q.x)}</td>`+
+    ms.map(m=>{const y=q.m[m];if(!y) return `<td class="r" style="color:var(--muted)">·</td>`;
+      if(y.semAtividade) return `<td class="r desl" title="Desligado em ${dt(y.demissao)}">Desl.</td>`;
+      const a=Math.max(0,y.pts)/mx[m];
+      return `<td class="r v${y.desligado?" desl":""}" style="background:color-mix(in srgb,var(--accent) ${Math.round(a*28)}%,transparent)" title="${esc(ab(m))}: ${fmt(y.pts)} pontos${y.desligado?" · desligado em "+dt(y.demissao):""}">${fmt(y.pts)}${y.desligado?" ·D":""}</td>`}).join("")+
+    `<td class="r num"><b>${fmt(q.tot)}</b></td></tr>`).join("");
+}
+function renderAnual(L){
+  const tem=L.some(x=>x.ano);
+  if(S.mes&&S.modo!=="consultor") renderMeses();
+  $("#anualPanel").hidden=!tem; if(!tem) return;
+  const ano=S.mes.slice(0,4), m=+ultimoMes().slice(5,7);
+  $("#anualmes").textContent=m===1?`janeiro de ${ano}`:`jan a ${(S.ciclos[ultimoMes()].rotulo||S.mes).slice(0,3).toLowerCase()} de ${ano}`;
+  // colunas ordenáveis: toque no título ordena, de novo inverte; vazios sempre no fim
+  const o=S.ordAnual||(S.ordAnual={k:"pts",d:-1});
+  const lojasAno=x=>x.ano?.lojas??x.lojas;
+  const V={nome:x=>x.nome,pts:x=>x.ano?.pts,lojas:x=>lojasAno(x)||null,dias:x=>x.ano?.diasTrabalhados,ppd:x=>x.ano?.ptsPorDia,
+    ppl:x=>x.ano&&lojasAno(x)?x.ano.pts/lojasAno(x):null,casa:x=>casa(x)?.meses};
+  const A=[...L].sort((a,b)=>{const va=V[o.k](a), vb=V[o.k](b);
+    if(va==null||vb==null) return (va==null)-(vb==null);
+    return (typeof va==="string"?va.localeCompare(vb,"pt-BR"):va-vb)*o.d});
+  const th=(k,t,r=true)=>`<th${r?' class="r"':""} aria-sort="${o.k===k?(o.d>0?"ascending":"descending"):"none"}"><button type="button" class="ord" data-ord="${k}">${t}<i>${o.k===k?(o.d>0?"▲":"▼"):"▼"}</i></button></th>`;
+  $("#anualhead").innerHTML=`<tr><th>#</th>${th("nome","Consultor",false)}${th("pts","Pontos no ano")}${th("lojas","Lojas no ano")}${th("dias","Dias trabalhados")}${th("ppd","Pontos por dia")}${th("ppl","Pontos por loja")}${th("casa","Tempo de casa")}</tr>`;
+  $("#anual").innerHTML=A.map((x,i)=>`<tr class="row" tabindex="0" data-id="${x.id}" aria-selected="${S.sel===x.id}"><td class="num">${i+1}</td><td>${esc(curto(x.nome))}${ufTag(x)}${x.desligado?` <span class="tag t1">desligado</span>`:""}</td>`+
+    `<td class="r num">${x.ano?fmt(x.ano.pts):"–"}</td><td class="r num">${lojasAno(x)??"–"}</td><td class="r num">${x.ano?fmt(x.ano.diasTrabalhados):"–"}</td>`+
+    `<td class="r num">${x.ano?.ptsPorDia!=null?dec(x.ano.ptsPorDia):"–"}</td><td class="r num">${V.ppl(x)!=null?dec(V.ppl(x)):"–"}</td><td class="r num" title="${casa(x)?"desde "+casa(x).desde:""}">${casa(x)?.longo??"–"}</td></tr>`).join("");
+}
+const chip=(x,t)=>`<button class="chip" data-id="${x.id}" aria-pressed="${S.sel===x.id}" title="${esc(x.nome)}${x.uf?" · "+esc(x.uf):""}${t?" · "+t:""}"><span class="chip-nm">${esc(curto(x.nome))}</span>${x.uf?`<span class="chip-uf">${esc(x.uf)}</span>`:""}</button>`;
+const lvl=x=>x.box?`<span class="lvl ${x.box.tom}">N${x.box.n}</span>`:`<span class="lvl na">?</span>`;
+
+function paraSubir(x){
+  if(x.desligado) return ["Consultor desligado: não entra no 9-box, no ranking nem na média do time."];
+  const ret=[];
+  if(x.perf<2){
+    const passos=(x.perf===0?2:3)-x.soma, op=[];
+    if(x.efetividade!=null&&x.eN<2) op.push(`efetividade de ${pct(x.efetividade)} para <b>${pct(R.efet[x.eN])}</b>${x.eN===0?" (abaixo de 89% a campanha também desconta 10 pontos)":""}`);
+    if(x.pN<2) op.push(`pontos de ${fmt(x.pts)} para <b>${fmt(Math.ceil(R.prod[x.pN]*x.media))}</b> (${dec(R.prod[x.pN])}× a média do time no mês)`);
+    ret.push(passos>1?`Para a performance subir de faixa, precisa avançar ${passos} degraus: ${op.join(" e ")}${op.length<passos?", depois o próximo degrau do mesmo indicador":""}.`
+      :`Para a performance subir de faixa, basta um destes: ${op.join(" ou ")}.`);
+  }
+  if(x.sup!=null&&x.supB<2){
+    const alvo=R.sup[x.supB];
+    const baixos=CRITERIOS.map(k=>({...k,v:x.a.notas[k.k]})).sort((a,b)=>a.v-b.v).slice(0,2);
+    ret.push(`Média do supervisor de ${dec(x.sup)} para <b>${dec(alvo)}</b>. Pontos a trabalhar: ${baixos.map(b=>`${b.c||b.t.toLowerCase()} (${b.v})`).join(" e ")}.`);
+  }
+  if(!ret.length) ret.push("Está no nível máximo. Manter os dois eixos no próximo ciclo.");
+  return ret;
+}
+
+async function renderFicha(L,alvo){
+  const f=$(alvo); const x=L.find(y=>y.id===S.sel);
+  if(!x){f.hidden=true;return}
+  f.hidden=false;
+  const b=x.box;
+  const maxDet=Math.max(1,...DETALHE.map(([k])=>x.detalhe?.[k]||0));
+  const hist=MESES().map(m=>{const y=calc(m).find(z=>z.id===x.id);return y?`<div>${y.box?`<span class="lvl ${y.box.tom}">N${y.box.n}</span>`:`<span class="lvl na">?</span>`}<span>${esc((S.ciclos[m].rotulo||m).slice(0,3))}</span></div>`:""}).join("");
+  let avalPor="";
+  if(x.a?.avaliador) avalPor=x.a.avaliador;
+  const efPos=v=>clamp((v-0.6)/0.4)*100;
+  f.innerHTML=`
+  <div class="ficha-head">
+    <div><div class="label">Ficha do consultor · ${esc(S.ciclos[S.mes].rotulo)}</div><h3>${foto(x,"fh")}${esc(x.nome)}${x.uf?` <span class="uf" style="font-size:13px;vertical-align:6px">${esc((x.ufs||[x.uf]).join(" · "))}</span>`:""}</h3>${casa(x)?`<div class="note" style="margin-top:2px">${ico("casa")} Tempo de casa: <b style="color:var(--fg)">${casa(x).longo}</b> · admissão em ${casa(x).desde}</div>`:""}</div>
+    <div style="text-align:right">${b?`<span class="lvl ${b.tom}" style="height:30px;min-width:44px;font-size:14px">N${b.n}</span> <span class="box-tag" style="color:var(--${b.tom==="gold"?"accent":b.tom==="mid"?"fg":b.tom})">${b.nome}</span>`:`<span class="no">${x.desligado?"Desligado · fora do 9-box":"Aguardando avaliação do supervisor"}</span>`}
+      <div class="hist" style="margin-top:10px;justify-content:flex-end">${hist}</div></div>
+  </div>
+  ${b?`<div class="acao ${b.tom==="gold"?"":b.tom}"><div class="label" style="margin-bottom:4px">${ico(b.n)} Ação definida para N${b.n}</div>${esc(b.acao)}${ACOMP[b.n]?`<div class="acomp" style="margin-top:8px">${ico("olho")} Supervisor acompanha de perto: ${ACOMP[b.n].toLowerCase()}</div>`:""}</div>`:""}
+  <div class="cols3">
+    <div class="sub"><h4>Performance · ${BAND[x.perf]}</h4>
+      <div class="kv"><span>Efetividade</span><span class="num"><span class="tag t${x.eN}">${pct(x.efetividade)}</span></span></div>
+      <div class="meter" aria-label="Efetividade"><i style="width:${efPos(x.efetividade??0)}%;background:var(--${["bad","muted","good"][x.eN]})"></i><span class="tick" style="left:${efPos(.89)}%"></span><span class="tick" style="left:${efPos(.95)}%"></span></div>
+      <div class="note" style="font-size:12px">Marcas em 89% (meta da campanha) e 95%.</div>
+      <div class="kv" style="margin-top:10px"><span>Pontos na campanha</span><span class="num"><span class="tag t${x.pN}">${fmt(x.pts)}</span></span></div>
+      <div class="kv"><span>Média do time</span><span class="num">${fmt(x.media)} (${dec(x.ratio)}×)</span></div>
+      ${x.penalidadeEfetividade?`<div class="kv"><span>Penalidade de efetividade</span><span class="num down">−${x.penalidadeEfetividade}</span></div>`:""}
+    </div>
+    <div class="sub"><h4>Produtividade aberta</h4>
+      ${GRUPOS.map(g=>{const ks=Object.keys(g.itens).filter(k=>x.detalhe&&k in x.detalhe), mg=Math.max(1,...ks.map(k=>x.detalhe[k]));
+        return ks.length?`<div class="label" style="margin:10px 0 6px">${g.s} · ${g.t} <span style="text-transform:none;letter-spacing:0;font-weight:500">(${fmt(ptsGrupo(g,x))} pts)</span></div>`+
+        ks.map(k=>`<div style="margin-bottom:7px"><div class="kv" style="border:0;padding:0"><span>${DETALHE.find(d=>d[0]===k)[1]}</span><span class="num">${fmt(x.detalhe[k])}</span></div><div class="bar"><i style="width:${(x.detalhe[k]/mg)*100}%"></i></div></div>`).join(""):""}).join("")}
+    </div>
+    <div class="sub"><h4>Avaliação do supervisor${x.sup!=null?" · "+BAND[x.supB]:""}</h4>
+      ${x.a?.notas?CRITERIOS.map(k=>`<div class="kv"><span>${k.t}</span><span class="num"><b>${x.a.notas[k.k]??"–"}</b> <span style="color:var(--muted)">/ 5</span></span></div>`).join("")+`<div class="kv"><span><b>Média</b></span><span class="num"><b>${x.sup!=null?dec(x.sup):"–"}</b></span></div>`:`<p class="note">Ainda sem avaliação neste ciclo. O supervisor preenche na aba Avaliar.</p>`}
+      ${x.a?.feedback?`<div class="label" style="margin:12px 0 4px">Feedback</div><p class="feedback">${esc(x.a.feedback)}</p>`:""}
+      ${x.a?.atualizadoEm?`<p class="note" style="font-size:12px;margin-top:8px">Avaliado${avalPor?" por "+esc(avalPor):""} em ${new Date(x.a.atualizadoEm).toLocaleDateString("pt-BR")}</p>`:""}
+    </div>
+  </div>
+  ${x.ano?`<div class="sub" style="margin-top:18px"><h4>Campanha anual · jan a ${esc((S.ciclos[ultimoMes()].rotulo||S.mes).slice(0,3).toLowerCase())}</h4><div class="cols4" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+    <div><div class="label">Pontos no ano</div><div class="big num">${fmt(x.ano.pts)}</div></div>
+    <div><div class="label">Lojas no ano</div><div class="big num">${x.ano.lojas??x.lojas??"–"}</div></div>
+    <div><div class="label">Dias trabalhados no ano</div><div class="big num">${fmt(x.ano.diasTrabalhados)}</div></div>
+    <div><div class="label">Pontos por dia trabalhado</div><div class="big num">${x.ano.ptsPorDia!=null?dec(x.ano.ptsPorDia):"–"}</div></div>
+    <div><div class="label">Pontos por loja no ano</div><div class="big num">${(x.ano.lojas??x.lojas)?dec(x.ano.pts/(x.ano.lojas??x.lojas)):"–"}</div></div>
+  </div></div>`:""}
+  <div class="sub" style="margin-top:18px"><h4>O que precisa para subir</h4><ul class="subir">${paraSubir(x).map(t=>`<li>${t}</li>`).join("")}</ul></div>`;
+}
+
+function renderAvaliar(){
+  if(S.ciclos[S.mes]?.anual){
+    $("#avcount").textContent=""; $("#avlista").innerHTML="";
+    $("#avform").dataset.for=""; $("#avform").innerHTML=`<p class="note">A avaliação é mensal. Para avaliar, escolha um mês no filtro Ciclo. No "Ano · geral", a nota do supervisor é a média das avaliações do ano.</p>`;
+    return;
+  }
+  const L=calc(S.mes).filter(x=>!x.desligado).sort((a,b)=>a.nome.localeCompare(b.nome));
+  if(!S.avSel||!L.find(x=>x.id===S.avSel)) S.avSel=(L.find(x=>!x.a)||L[0])?.id;
+  $("#avcount").textContent=`${L.filter(x=>x.a).length} de ${L.length} avaliados`;
+  $("#avlista").innerHTML=L.map(x=>`<button type="button" data-av="${x.id}" aria-current="${x.id===S.avSel}"><span>${esc(curto(x.nome))}</span>${x.a?"<span class='ok'>avaliado</span>":"<span class='no'>pendente</span>"}</button>`).join("");
+  const x=L.find(y=>y.id===S.avSel); const form=$("#avform");
+  if(!x){form.innerHTML="";return}
+  if(form.dataset.for===S.mes+"__"+x.id&&form.dataset.dirty==="1") return; // não apaga o que está sendo digitado
+  form.dataset.for=S.mes+"__"+x.id; form.dataset.dirty="0";
+  const n=x.a?.notas||{};
+  const ro=S.canWrite===false;
+  form.innerHTML=`<div class="label">Avaliando</div><h3 style="margin:2px 0 4px;font-size:24px;font-weight:900;letter-spacing:-.02em">${esc(x.nome)}</h3>
+   <p class="note" style="margin:0 0 6px">Performance no mês: efetividade ${pct(x.efetividade)} · ${fmt(x.pts)} pontos (${BAND[x.perf].toLowerCase()}). Avalie só o comportamento: a performance já vem da campanha.</p>
+   ${CRITERIOS.map(k=>`<fieldset${ro?" disabled":""}><legend>${k.t}</legend><p>${k.d}</p><div class="scale">${[1,2,3,4,5].map(v=>`<span><input type="radio" id="c-${k.k}-${v}" name="${k.k}" value="${v}"${n[k.k]===v?" checked":""}><label for="c-${k.k}-${v}"><b>${v}</b>${ESCALA[v-1]}</label></span>`).join("")}</div></fieldset>`).join("")}
+   <fieldset${ro?" disabled":""}><legend>Feedback para o consultor</legend><p>Aparece na ficha do consultor, que todo o time com acesso pode ver.</p><textarea id="fb" maxlength="1200">${esc(x.a?.feedback||"")}</textarea></fieldset>
+   <div class="actions"><button class="btn" type="submit" id="salvar"${ro?" disabled":""}>Salvar avaliação</button><span class="media-prev" id="mprev"></span><span class="msg" id="avmsg" role="status">${ro?"Seu e-mail tem acesso só de leitura. Peça à equipe da empresa a liberação de supervisor para avaliar.":""}</span></div>`;
+  prevMedia();
+}
+function lerForm(){const notas={};CRITERIOS.forEach(k=>{const v=document.querySelector(`input[name="${k.k}"]:checked`);if(v)notas[k.k]=+v.value});return notas}
+function prevMedia(){
+  const notas=lerForm(), v=Object.values(notas);
+  const el=$("#mprev"); if(!el) return;
+  if(v.length<CRITERIOS.length){el.innerHTML=`${v.length}/${CRITERIOS.length} critérios`;return}
+  const m=v.reduce((s,n)=>s+n,0)/v.length;
+  const x=calc(S.mes).find(y=>y.id===S.avSel); const b=BOX[band(m,R.sup)][x.perf];
+  el.innerHTML=`Média <b>${dec(m)}</b> → N${b.n} ${b.nome}`;
+}
+
+function renderRegras(){
+  const box=[...BOX].reverse().flat().sort((a,b)=>b.n-a.n);
+  $("#regras").innerHTML=`
+  <div class="panel"><h2>Como funciona</h2>
+   <p class="lead">Todo mês o consultor recebe <b>duas notas</b>: uma pelos números da Campanha de Incentivo e outra do supervisor. Cada nota é <b>baixa, média ou alta</b>. Juntas, elas dão a posição no 9-box, de N1 a N9.</p>
+   <div class="duas">
+    <div class="bloco"><h3>1 · Performance</h3><p class="de">Números da Campanha de Incentivo</p>
+     <div class="ind"><span>Efetividade (visitas feitas do roteiro)</span><div class="pts"><i class="g">${pc(R.efet[1])} ou mais: 2</i><i>${pc(R.efet[0])} a ${pc(R.efet[1]-0.001)}: 1</i><i class="b">abaixo de ${pc(R.efet[0])}: 0</i></div></div>
+     <div class="ind"><span>Pontos, comparados à média do time</span><div class="pts"><i class="g">${pc(R.prod[1])} ou mais: 2</i><i>${pc(R.prod[0])} a ${pc(R.prod[1]-0.01)}: 1</i><i class="b">abaixo de ${pc(R.prod[0])}: 0</i></div></div>
+     <div class="res">Soma <b>3 ou 4 = alta</b> · <b>2 = média</b> · <b>0 ou 1 = baixa</b></div>
+    </div>
+    <div class="bloco"><h3>2 · Supervisor</h3><p class="de">Nota de 1 a 5 em cada critério</p>
+     <ol class="crit2">${CRITERIOS.map(k=>`<li>${k.t}</li>`).join("")}</ol>
+     <div class="res">Média <b>${dec(R.sup[1])} ou mais = alta</b> · <b>${dec(R.sup[0])} a ${dec(R.sup[1]-0.1)} = média</b> · <b>abaixo de ${dec(R.sup[0])} = baixa</b></div>
+    </div>
+   </div>
+   <div class="label" style="margin:18px 0 0">3 · Posição no 9-box</div>
+   <div class="mini9" role="table" aria-label="Posições do 9-box">
+    <span></span><span class="ax">Perf. baixa</span><span class="ax">Perf. média</span><span class="ax">Perf. alta</span>
+    ${[2,1,0].map(s=>`<span class="ax">Sup.<br>${BAND[s].toLowerCase()}</span>`+[0,1,2].map(p=>{const b=BOX[s][p];return `<div class="m9 ${b.tom}"><b>N${b.n}</b>${b.nome.replace("desenvolvimento","desenvol&shy;vimento").replace("recuperação","recupe&shy;ração")}</div>`}).join("")).join("")}
+   </div>
+   <p class="note" style="margin-top:10px">N1, N2 e N3 entram no plano de ação de 90 dias, com o supervisor acompanhando de perto.</p>
+   <details class="mais"><summary>Mais detalhes</summary>
+    <p><b style="color:var(--fg)">Exemplo:</b> efetividade de 96% vale 2; pontos 10% abaixo da média valem 1. Soma 3: performance alta.</p>
+    <p>Os pontos são comparados à média do time porque o total da campanha muda de um mês para outro.</p>
+    <ul>${CRITERIOS.map(k=>`<li><b style="color:var(--fg)">${k.t}:</b> ${k.d}</li>`).join("")}</ul>
+    <p>Sem a avaliação do supervisor, o consultor fica como <b style="color:var(--fg)">aguardando supervisor</b>. Desligados aparecem só no mês da saída e ficam fora do 9-box, do ranking e da média.</p>
+    <p><b style="color:var(--fg)">Ranking:</b> pelo nível (N9 no topo) e, no mesmo nível, pela nota geral de 0 a 100 (metade performance, metade supervisor).</p>
+   </details>
+  </div>
+  <div class="panel"><h2>Ação por posição</h2><div class="tbl"><table><tbody>
+   ${box.map(b=>`<tr><td style="width:56px"><span class="lvl ${b.tom}">N${b.n}</span></td><td><b style="font-weight:700">${b.nome}</b><br><span class="note" style="font-size:13px">${esc(b.acao)}</span></td></tr>`).join("")}
+  </tbody></table></div></div>`;
+}
+
+// eventos
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-tab]");
+  if(t&&S.modo==="consultor"&&!["consultores","regras"].includes(t.dataset.tab)) return;
+  if(t){S.tab=t.dataset.tab;document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",b===t));["time","consultores","anual","avaliar","regras"].forEach(v=>$("#v-"+v).hidden=v!==S.tab);try{localStorage.setItem("9box-tab",S.tab)}catch{}return}
+  const od=e.target.closest("[data-ord]");
+  if(od){const k=od.dataset.ord, o=S.ordAnual||{k:"pts",d:-1};S.ordAnual=o.k===k?{k,d:-o.d}:{k,d:k==="nome"?1:-1};renderAnual(calc(S.mes));$(`[data-ord="${k}"]`)?.focus();return}
+  const u=e.target.closest("[data-uf]");
+  if(u){S.uf=u.dataset.uf&&S.uf!==u.dataset.uf?u.dataset.uf:null;renderConsultores();return}
+  const c=e.target.closest("[data-id]");
+  if(c){S.sel=S.modo==="consultor"?S.meuId:S.sel===c.dataset.id?null:c.dataset.id;renderTime();renderConsultores();if(S.sel||S.tab==="anual")renderFicha(calc(S.mes),"#ficha3");if(S.sel)$({consultores:"#ficha2",anual:"#ficha3"}[S.tab]||"#ficha").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});return}
+  const a=e.target.closest("[data-av]");
+  if(a){$("#avform").dataset.dirty="0";S.avSel=a.dataset.av;renderAvaliar()}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr.row")){e.target.click()}
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches?.(".mapa-svg .on")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}});
+$("#mes").addEventListener("change",e=>{S.mes=e.target.value;S.sel=null;$("#avform").dataset.dirty="0";render()});
+$("#avform").addEventListener("input",()=>{$("#avform").dataset.dirty="1";prevMedia();$("#avmsg").textContent=""});
+$("#avform").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const notas=lerForm(), msg=$("#avmsg");
+  if(Object.keys(notas).length<CRITERIOS.length){msg.style.color="var(--bad)";msg.textContent="Dê nota para os 5 critérios antes de salvar.";return}
+  if(!S.db){msg.textContent="Sem conexão com o banco nesta visualização.";return}
+  if(S.ciclos[S.mes]?.anual||!/^\d{4}-\d{2}$/.test(S.mes)){msg.textContent="Escolha um mês para avaliar.";return}
+  const btn=$("#salvar"); btn.disabled=true; msg.style.color="var(--muted)"; msg.textContent="Salvando…";
+  const id=S.mes+"__"+S.avSel;
+  try{
+    await S.db.collection("avaliacoes").doc(id).set({mes:S.mes,consultor:S.avSel,notas,feedback:$("#fb").value.trim(),avaliador:S.meEmail,atualizadoEm:new Date().toISOString()});
+    $("#avform").dataset.dirty="0"; msg.style.color="var(--good)"; msg.textContent="Avaliação salva.";
+    const L=calc(S.mes).filter(x=>!x.desligado).sort((a,b)=>a.nome.localeCompare(b.nome)); const prox=L.find(x=>!x.a);
+    setTimeout(()=>{if(prox){S.avSel=prox.id;renderAvaliar()}},900);
+  }catch(err){
+    msg.style.color="var(--bad)";
+    msg.textContent=err?.code==="permission-denied"?"Seu e-mail não está liberado para avaliar. Peça à equipe da empresa a liberação de supervisor.":"Não foi possível salvar agora. Tente de novo em alguns segundos.";
+    if(err?.code==="permission-denied"){S.canWrite=false}
+  }finally{btn.disabled=S.canWrite===false}
+});
+
+// ---------- Firebase: login e dados ----------
+// Quem vê e quem grava é decidido em firestore.rules (listas de e-mail). ADMINS aqui só mostra o botão de importar.
+const ADMINS=["usuario@exemplo.com"];
+firebase.initializeApp({"apiKey": "SUA_API_KEY", "authDomain": "seu-projeto-firebase.firebaseapp.com", "projectId": "seu-projeto-firebase", "storageBucket": "seu-projeto-firebase.firebasestorage.app", "messagingSenderId": "871297217737", "appId": "SEU_APP_ID"});
+const auth=firebase.auth(), fdb=firebase.firestore();
+S.db=fdb;
+let subs=[];
+
+$("#loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const btn=$("#loginBtn"); $("#loginErr").textContent=""; btn.disabled=true; btn.textContent="Entrando…";
+  try{await auth.signInWithEmailAndPassword($("#loginEmail").value.trim(),$("#loginPassword").value)}
+  catch{$("#loginErr").textContent="E-mail ou senha inválidos.";btn.disabled=false;btn.textContent="Entrar"}
+});
+$("#logoutBtn").addEventListener("click",()=>auth.signOut());
+// tema claro/escuro: o botão grava a escolha; sem escolha segue o sistema
+function temaAtual(){return document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}
+function pintarTema(){const t=temaAtual();$("#temaBtn").innerHTML=ico(t==="light"?"lua":"sol");$("#temaBtn").title=t==="light"?"Mudar para o tema escuro":"Mudar para o tema claro"}
+$("#temaBtn").addEventListener("click",()=>{const t=temaAtual()==="light"?"dark":"light";document.documentElement.dataset.theme=t;try{localStorage.setItem("9box-tema",t)}catch{};pintarTema()});
+matchMedia("(prefers-color-scheme: light)").addEventListener("change",pintarTema);
+pintarTema();
+
+$("#importFile").addEventListener("change",async e=>{
+  const fs=[...e.target.files]; e.target.value=""; if(!fs.length) return;
+  try{
+    // vários ciclos de uma vez: valida todos antes de gravar
+    const docs=await Promise.all(fs.map(async f=>JSON.parse(await f.text())));
+    if(docs.some(d=>!/^\d{4}-\d{2}$/.test(d.mes||"")||!Array.isArray(d.consultores))) throw new Error("formato");
+    docs.sort((a,b)=>a.mes.localeCompare(b.mes));
+    for(const d of docs) await fdb.collection("ciclos").doc(d.mes).set(d);
+    S.mes=docs[docs.length-1].mes; render();
+    $("#offline").hidden=false;
+    $("#offline").textContent=`${docs.length} ciclo${docs.length>1?"s":""} importado${docs.length>1?"s":""}: ${docs.map(d=>d.rotulo||d.mes).join(", ")}.`;
+  }catch(err){
+    $("#offline").hidden=false;
+    $("#offline").textContent=err?.code==="permission-denied"?"Seu e-mail não pode importar ciclos.":"Arquivo inválido. Use o ciclo_AAAA-MM.json gerado pelo importar.py.";
+  }
+});
+
+// Consultor com login próprio: lê acessos/{e-mail} e só os próprios documentos
+async function modoConsultor(){
+  let a=null;
+  try{a=await fdb.collection("acessos").doc(S.meEmail).get()}catch{}
+  if(!a||!a.exists) return semAcesso();
+  S.modo="consultor"; S.meuId=a.data().id; S.sel=S.meuId; S.uf=null;
+  document.body.classList.add("consultor");
+  $("#ctitulo").textContent="Sua carta"; $("#mtitulo").textContent="Onde você atua";
+  $("#cnota").textContent="Atributos de 0 a 99: 50 é a média do time no mês e 99 é o melhor do time. Sua ficha está logo abaixo.";
+  document.querySelector('[data-tab="consultores"]').click();
+  subs.push(fdb.collection("cartas").where("id","==",S.meuId).onSnapshot(s=>{
+    S.ciclos=Object.fromEntries(s.docs.map(d=>{const c=d.data();return [c.mes,{mes:c.mes,rotulo:c.rotulo,fonte:c.fonte,media:c.media,maximos:c.maximos,medias:c.medias,consultores:[c.consultor]}]}));
+    montarAnos();
+    if(!S.mes||!S.ciclos[S.mes]) S.mes=MESES().pop()||null;
+    if(!S.mes){$("#offline").hidden=false;$("#offline").textContent="Ainda não há ciclo publicado para você.";}
+    render();
+  },()=>semAcesso()));
+  subs.push(fdb.collection("avaliacoes").where("consultor","==",S.meuId).onSnapshot(s=>{
+    S.aval=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));
+    if(S.mes) render();
+  },()=>{}));
+  fdb.collection("fotos").doc(S.meuId).get().then(d=>{if(d.exists){S.fotos={[S.meuId]:d.data().img};if(S.mes)render()}}).catch(()=>{});
+}
+function semAcesso(){
+  $("#offline").hidden=false;
+  $("#offline").textContent=`O login de ${S.meEmail} está correto, mas este e-mail ainda não tem acesso ao 9-box. Peça a liberação à equipe da empresa.`;
+}
+
+auth.onAuthStateChanged(u=>{
+  subs.forEach(f=>f()); subs=[];
+  if(!u){
+    $("#loginGate").hidden=false; $("#appRoot").hidden=true;
+    $("#loginBtn").disabled=false; $("#loginBtn").textContent="Entrar";
+    S.ciclos={}; S.aval={}; S.fotos={}; S.mes=null; S.modo=null; S.sel=null; document.body.classList.remove("consultor");
+    $("#ctitulo").textContent="Cartas do time"; $("#mtitulo").textContent="Onde o time atua"; return;
+  }
+  S.meEmail=(u.email||"").toLowerCase(); S.canWrite=null;
+  $("#loginGate").hidden=true; $("#appRoot").hidden=false;
+  $("#userEmail").textContent=S.meEmail;
+  $("#importBtn").hidden=!ADMINS.includes(S.meEmail);
+  try{const t=localStorage.getItem("9box-tab");if(t)document.querySelector(`[data-tab="${t}"]`)?.click()}catch{}
+  $("#offline").hidden=false;
+  $("#offline").textContent="Carregando os ciclos da Campanha de Incentivo…";
+  subs.push(fdb.collection("ciclos").onSnapshot(s=>{
+    S.ciclos=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));
+    montarAnos();
+    if(!S.mes||!S.ciclos[S.mes]) S.mes=MESES().pop()||null;
+    if(!S.mes){$("#offline").hidden=false;$("#offline").textContent="Nenhum ciclo importado ainda. O primeiro entra com a planilha de apuração da Campanha de Incentivo.";}
+    render();
+  },err=>{err?.code==="permission-denied"?modoConsultor():($("#offline").textContent="Não foi possível ler os ciclos. Recarregue a página.")}));
+  subs.push(fdb.collection("fotos").onSnapshot(s=>{
+    S.fotos=Object.fromEntries(s.docs.map(d=>[d.id,d.data().img]));
+    if(S.mes) render();
+  },()=>{}));
+  subs.push(fdb.collection("avaliacoes").onSnapshot(s=>{
+    S.aval=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));
+    if(S.mes) render();
+  },()=>{}));
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,466 @@
+<title>9-Box Penalty</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap">
+<style>
+/* Layout: painel escuro como o slide da empresa × Penalty. 9-box à esquerda, ranking do time à direita, ficha do consultor abaixo. */
+:root{
+  --bg:#0b0b0c; --surface:#151516; --surface-2:#1c1c1e; --line:#2b2b2e;
+  --fg:#f3f2ee; --muted:#9b9a95; --accent:#f2b233;
+  --good:#5fe39a; --good-bg:#15281d; --good-line:#2f7a4c;
+  --gold-bg:#382a10; --gold-line:#c9922a;
+  --mid-bg:#1c1c1e; --mid-line:#36363a;
+  --bad:#ff7a90; --bad-bg:#2a1217; --bad-line:#7a2433;
+  --font:"Lexend",ui-sans-serif,system-ui,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;font-weight:300}
+.wrap{max-width:1400px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:14px}
+.spot{display:flex;gap:4px}
+.spot span{width:26px;height:26px;border-radius:50%;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:900;font-size:14px}
+.brand .sep{width:1px;height:26px;background:var(--line)}
+.penalty{font-weight:900;font-style:italic;letter-spacing:-.02em;font-size:17px}
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:500}
+nav.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+nav.tabs button{border:0;background:none;padding:6px 14px;border-radius:999px;font-weight:500;font-size:14px;color:var(--muted);cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--accent);color:#141006;font-weight:700}
+
+h1{font-size:clamp(28px,4.4vw,52px);font-weight:900;letter-spacing:-.035em;line-height:1.05;margin:28px 0 8px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--muted);max-width:68ch;margin:0 0 24px}
+
+.summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;display:flex;gap:8px;align-items:center}
+.pill b{font-weight:800}
+.pill.warn{border-color:var(--gold-line);color:var(--accent)}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:980px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px}
+.panel h2{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin:0 0 16px}
+
+/* 9-box */
+.nine{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px}
+.yaxis{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center}
+.cells{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cell{border:1px solid var(--mid-line);background:var(--mid-bg);border-radius:4px;padding:10px 12px 12px;min-height:150px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.cell .n{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.08em;display:flex;justify-content:space-between}
+.cell .who{display:flex;flex-wrap:wrap;gap:5px;flex:1;align-content:flex-start}
+.cell .nm{font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.15}
+.cell.good{background:var(--good-bg);border-color:var(--good-line)} .cell.good .nm,.cell.good .n{color:var(--good)}
+.cell.gold{background:var(--gold-bg);border-color:var(--gold-line)} .cell.gold .nm,.cell.gold .n{color:var(--accent)}
+.cell.bad{background:var(--bad-bg);border-color:var(--bad-line)} .cell.bad .nm,.cell.bad .n{color:var(--bad)}
+.chip{border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.35);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.chip:hover,.chip[aria-pressed="true"]{border-color:var(--fg);background:rgba(255,255,255,.08)}
+.xaxis{grid-column:2;text-align:center;border-top:1px solid var(--line);padding-top:10px}
+.xlabels{grid-column:2;display:grid;grid-template-columns:repeat(3,1fr);text-align:center;font-size:11px;color:var(--muted)}
+@media (max-width:560px){.cell{min-height:110px;padding:8px}.cell .nm{font-size:13px}.chip{font-size:11px;padding:1px 7px}}
+.pend{margin-top:16px;border:1px dashed var(--gold-line);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.pend .who{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ranking */
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 8px 10px;white-space:nowrap}
+td{padding:9px 8px;border-top:1px solid var(--line);white-space:nowrap}
+tr.row{cursor:pointer} tr.row:hover td{background:var(--surface-2)}
+tr.row[aria-selected="true"] td{background:var(--surface-2);box-shadow:inset 0 0 0 0 var(--accent)}
+td.r{text-align:right} th.r{text-align:right}
+.lvl{display:inline-grid;place-items:center;min-width:34px;height:24px;border-radius:999px;font-weight:800;font-size:12px;border:1px solid var(--mid-line);color:var(--muted)}
+.lvl.good{color:var(--good);border-color:var(--good-line);background:var(--good-bg)}
+.lvl.gold{color:var(--accent);border-color:var(--gold-line);background:var(--gold-bg)}
+.lvl.bad{color:var(--bad);border-color:var(--bad-line);background:var(--bad-bg)}
+.lvl.na{border-style:dashed}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px}
+.t0{color:var(--bad);background:var(--bad-bg)} .t1{color:var(--muted);background:var(--surface-2)} .t2{color:var(--good);background:var(--good-bg)}
+.trend{font-size:12px;font-weight:700} .up{color:var(--good)} .down{color:var(--bad)} .same{color:var(--muted)}
+
+/* ficha */
+.ficha{margin-top:24px}
+.ficha-head{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.ficha h3{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:-.03em;margin:4px 0 0;line-height:1.1}
+.box-tag{font-weight:800;font-size:15px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:20px}
+@media (max-width:900px){.cols3{grid-template-columns:minmax(0,1fr)}}
+.sub{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:16px;min-width:0}
+.sub h4{margin:0 0 12px;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.big{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13.5px;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.bar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.meter{position:relative;height:10px;background:var(--line);border-radius:99px;margin:14px 0 6px}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:99px}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--fg);opacity:.6}
+.acao{border-left:3px solid var(--accent);padding:10px 14px;background:var(--surface-2);margin-top:18px;border-radius:0 4px 4px 0}
+.acao.good{border-color:var(--good)} .acao.bad{border-color:var(--bad)} .acao.mid{border-color:var(--muted)}
+ul.subir{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.hist{display:flex;gap:8px;flex-wrap:wrap}
+.hist div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.feedback{white-space:pre-wrap;font-size:14px;margin:0}
+
+/* avaliar */
+.aval-grid{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.aval-grid{grid-template-columns:minmax(0,1fr)}}
+.lista{display:flex;flex-direction:column;gap:4px}
+.lista button{display:flex;justify-content:space-between;gap:8px;align-items:center;text-align:left;background:none;border:1px solid transparent;border-radius:6px;padding:8px 10px;cursor:pointer;font-size:14px}
+.lista button:hover{background:var(--surface-2)}
+.lista button[aria-current="true"]{border-color:var(--accent);background:var(--surface-2)}
+.ok{color:var(--good);font-size:12px;font-weight:700} .no{color:var(--accent);font-size:12px;font-weight:700}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:16px 0}
+legend{font-weight:700;font-size:16px;padding:0;float:left;width:100%}
+fieldset p{margin:4px 0 10px;color:var(--muted);font-size:13.5px;clear:both}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.scale label{border:1px solid var(--line);border-radius:6px;padding:8px 4px;text-align:center;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+.scale label b{font-size:18px;color:var(--fg);font-weight:800}
+.scale input{position:absolute;opacity:0;pointer-events:none}
+.scale input:checked+label{border-color:var(--accent);background:var(--gold-bg);color:var(--accent)}
+.scale input:checked+label b{color:var(--accent)}
+.scale input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+textarea{width:100%;min-height:96px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.btn{background:var(--accent);color:#141006;border:0;border-radius:999px;padding:10px 22px;font-weight:800;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.media-prev{font-size:14px;color:var(--muted)} .media-prev b{color:var(--fg);font-weight:800}
+.msg{font-size:13px;font-weight:600}
+
+/* regras */
+.regras{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:820px){.regras{grid-template-columns:minmax(0,1fr)}}
+.regras table td{white-space:normal;vertical-align:top}
+.note{color:var(--muted);font-size:13.5px;max-width:70ch}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.chip,.lista button,tr.row td{transition:background .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand" aria-label="da empresa e Penalty">
+      <div class="spot" aria-hidden="true"></div>
+      <div class="sep"></div>
+      <div class="penalty">PENALTY</div>
+    </div>
+    <div class="controls">
+      <label class="label" for="mes">Ciclo</label>
+      <select id="mes"></select>
+      <nav class="tabs" role="tablist">
+        <button role="tab" id="tab-time" aria-selected="true" data-tab="time">Time</button>
+        <button role="tab" id="tab-avaliar" aria-selected="false" data-tab="avaliar">Avaliar</button>
+        <button role="tab" id="tab-regras" aria-selected="false" data-tab="regras">Regras</button>
+      </nav>
+    </div>
+  </header>
+
+  <h1>9-Box Penalty: <em id="h1mes">avaliação mensal</em></h1>
+  <p class="lede">Cada consultor cai em uma das nove posições, cruzando a performance na Campanha de Incentivo com a avaliação do supervisor. Cada posição tem uma ação definida e mostra o que falta para subir de nível.</p>
+
+  <section id="v-time" role="tabpanel" aria-labelledby="tab-time">
+    <div class="summary" id="summary"></div>
+    <div class="grid2">
+      <div class="panel">
+        <h2>9-box · <span id="boxmes"></span></h2>
+        <div class="nine">
+          <div class="yaxis label">Avaliação do supervisor</div>
+          <div class="cells" id="cells"></div>
+          <div class="xlabels"><span>Baixa</span><span>Média</span><span>Alta</span></div>
+          <div class="xaxis label">Performance na campanha</div>
+        </div>
+        <div class="pend" id="pend" hidden>
+          <span class="label" style="color:var(--accent)">Aguardando avaliação do supervisor</span>
+          <div class="who" id="pendwho"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Ranking do time</h2>
+        <div class="tbl"><table>
+          <thead><tr><th>#</th><th>Consultor</th><th>Nível</th><th class="r">Efetiv.</th><th class="r">Pontos</th><th class="r">Superv.</th><th class="r">vs mês ant.</th></tr></thead>
+          <tbody id="rank"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="panel ficha" id="ficha" hidden></div>
+  </section>
+
+  <section id="v-avaliar" role="tabpanel" aria-labelledby="tab-avaliar" hidden>
+    <div class="panel">
+      <h2>Formulário do supervisor · <span id="avmes"></span></h2>
+      <div class="aval-grid">
+        <div>
+          <div class="label" style="margin-bottom:8px" id="avcount"></div>
+          <div class="lista" id="avlista"></div>
+        </div>
+        <form id="avform" novalidate></form>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-regras" role="tabpanel" aria-labelledby="tab-regras" hidden>
+    <div class="regras" id="regras"></div>
+  </section>
+
+  <div class="empty" id="offline" hidden></div>
+</div>
+
+<script>
+const CRITERIOS=[
+ {k:"postura",t:"Postura e apresentação",d:"Uniforme, crachá, conduta na loja e na relação com a equipe da empresa."},
+ {k:"relacionamento",t:"Relacionamento com a loja",d:"Vínculo com gerente e vendedores; a loja abre espaço para as ações Penalty."},
+ {k:"rota",t:"Disciplina de rota",d:"Cumpre o roteiro, faz check-in e check-out, avisa ausências com antecedência."},
+ {k:"execucao",t:"Qualidade da execução",d:"Exposição no padrão, fotos nítidas, formulários completos e corretos."},
+ {k:"proatividade",t:"Proatividade",d:"Traz oportunidades de ponto extra e vitrine, resolve sem esperar ser cobrado."},
+];
+const ESCALA=["Muito abaixo","Abaixo","No esperado","Acima","Referência"];
+const DETALHE=[["bolaLimpa","Bola limpa"],["bolaCalibrada","Bola calibrada"],["atacador","Atacador"],["enchimento","Enchimento"],["vitrine","Vitrine"],["pontoExtra","Ponto extra"],["planograma","Planograma"],["compreGanhe","Compre e Ganhe"],["treinamento","Treinamento"],["extraTreinamento","Extra treinamento"]];
+// regras de corte
+const R={efet:[0.89,0.95],prod:[0.6,1.2],sup:[3,4]};
+const BAND=["Baixa","Média","Alta"];
+// BOX[sup][perf]
+const BOX=[
+ [{n:1,nome:"Plano de recuperação",tom:"bad",acao:"Plano de ação formal de 30 dias com metas de efetividade e pontos, acompanhamento semanal em campo. Sem evolução no ciclo seguinte, a permanência é revista."},
+  {n:2,nome:"Atenção",tom:"bad",acao:"Feedback formal sobre os critérios mais baixos da avaliação e plano de 30 dias. Supervisor acompanha pelo menos uma rota no mês."},
+  {n:3,nome:"Talento a lapidar",tom:"bad",acao:"Entrega resultado, mas a conduta está abaixo do padrão. Conversa franca sobre comportamento e acordo de padrões, revisados no próximo ciclo."}],
+ [{n:4,nome:"Em desenvolvimento",tom:"mid",acao:"Plano de desenvolvimento com o supervisor focado em efetividade e produtividade. Reciclagem de execução e acompanhamento quinzenal."},
+  {n:5,nome:"Elenco",tom:"mid",acao:"Mantém o padrão. Metas claras do mês e feedback mensal, com foco no indicador mais fraco para chegar a Titular."},
+  {n:7,nome:"Titular",tom:"good",acao:"Resultado forte. Feedback sobre os critérios de comportamento para chegar a Craque e reconhecimento no time."}],
+ [{n:6,nome:"Promessa",tom:"good",acao:"Comportamento acima do esperado, resultado ainda baixo. Revisar rota e carteira de lojas, treino prático de execução e acompanhamento semanal dos pontos."},
+  {n:8,nome:"Em ascensão",tom:"good",acao:"Mais autonomia e desafios: meta individual de pontos acima da média e apoio em treinamentos de colegas."},
+  {n:9,nome:"Craque",tom:"gold",acao:"Referência do time. Reconhecimento público, papel de multiplicador em treinamentos e prioridade em lojas e projetos estratégicos."}],
+];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct=v=>v==null?"–":(v*100).toFixed(1).replace(".",",")+"%";
+const fmt=v=>Math.round(v).toLocaleString("pt-BR");
+const dec=v=>v.toFixed(1).replace(".",",");
+const curto=n=>{const p=n.split(" ");return p.length>1?p[0]+" "+p[p.length-1]:n};
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const band=(v,[a,b])=>v<a?0:v<b?1:2;
+
+const S={ciclos:{},aval:{},mes:null,sel:null,tab:"time",avSel:null,canWrite:null,meId:null,user:null,profiles:{}};
+
+function calc(mes){
+  const c=S.ciclos[mes]; if(!c) return [];
+  const L=c.consultores||[]; const media=L.reduce((s,x)=>s+x.pts,0)/(L.length||1);
+  return L.map(x=>{
+    const ratio=media?x.pts/media:0;
+    const eN=x.efetividade==null?0:band(x.efetividade,R.efet), pN=band(ratio,R.prod);
+    const soma=eN+pN, perf=soma<=1?0:soma===2?1:2;
+    const a=S.aval[mes+"__"+x.id]; let sup=null,supB=null;
+    if(a&&a.notas){const v=CRITERIOS.map(k=>a.notas[k.k]).filter(n=>n>=1); if(v.length===CRITERIOS.length){sup=v.reduce((s,n)=>s+n,0)/v.length; supB=band(sup,R.sup);}}
+    const box=supB==null?null:BOX[supB][perf];
+    const perfIdx=(clamp(((x.efetividade??0)-0.75)/0.25)+clamp(ratio/2))/2;
+    const geral=sup==null?perfIdx*100:(perfIdx*50+((sup-1)/4)*50);
+    return {...x,media,ratio,eN,pN,soma,perf,a,sup,supB,box,geral};
+  });
+}
+function ordenar(L){return [...L].sort((a,b)=>(b.box?1:0)-(a.box?1:0)||(b.box?.n??0)-(a.box?.n??0)||b.geral-a.geral)}
+function mesAnterior(m){const k=Object.keys(S.ciclos).sort();const i=k.indexOf(m);return i>0?k[i-1]:null}
+
+function render(){
+  const meses=Object.keys(S.ciclos).sort();
+  const sel=$("#mes");
+  sel.innerHTML=meses.slice().reverse().map(m=>`<option value="${m}"${m===S.mes?" selected":""}>${esc(S.ciclos[m].rotulo||m)}</option>`).join("");
+  if(!S.mes){ $("#offline").hidden=false; return; }
+  $("#offline").hidden=true;
+  const rot=S.ciclos[S.mes].rotulo||S.mes;
+  $("#h1mes").textContent=rot.toLowerCase(); $("#boxmes").textContent=rot; $("#avmes").textContent=rot;
+  renderTime(); renderAvaliar(); renderRegras();
+}
+
+function renderTime(){
+  const L=calc(S.mes), O=ordenar(L);
+  const prev=mesAnterior(S.mes), P=prev?Object.fromEntries(calc(prev).map(x=>[x.id,x])):{};
+  const aval=L.filter(x=>x.box).length;
+  const media=L[0]?.media||0;
+  const efMed=L.filter(x=>x.efetividade!=null).reduce((s,x,_,a)=>s+x.efetividade/a.length,0);
+  $("#summary").innerHTML=
+    `<span class="pill"><b class="num">${L.length}</b> consultores</span>`+
+    `<span class="pill${aval<L.length?" warn":""}"><b class="num">${aval}/${L.length}</b> avaliados pelo supervisor</span>`+
+    `<span class="pill">Média de pontos <b class="num">${fmt(media)}</b></span>`+
+    `<span class="pill">Efetividade média <b class="num">${pct(efMed)}</b></span>`+
+    `<span class="pill">Fonte: ${esc(S.ciclos[S.mes].fonte||"Campanha de Incentivo")}</span>`;
+  // células, de cima (sup alta) para baixo
+  let h="";
+  for(let s=2;s>=0;s--) for(let p=0;p<3;p++){
+    const b=BOX[s][p], quem=L.filter(x=>x.box===b);
+    h+=`<div class="cell ${b.tom}"><div class="n"><span>N${b.n}</span><span class="num">${quem.length||""}</span></div><div class="who">${quem.map(x=>chip(x)).join("")}</div><div class="nm">${b.nome}</div></div>`;
+  }
+  $("#cells").innerHTML=h;
+  const pend=L.filter(x=>!x.box);
+  $("#pend").hidden=!pend.length;
+  $("#pendwho").innerHTML=pend.map(x=>chip(x,`Perf. ${BAND[x.perf].toLowerCase()}`)).join("");
+  // ranking
+  $("#rank").innerHTML=O.map((x,i)=>{
+    const q=P[x.id]; let tr="<span class='same'>–</span>";
+    if(q?.box&&x.box){const d=x.box.n-q.box.n; tr=d>0?`<span class="trend up">▲ N${q.box.n}→N${x.box.n}</span>`:d<0?`<span class="trend down">▼ N${q.box.n}→N${x.box.n}</span>`:`<span class="trend same">= N${x.box.n}</span>`;}
+    return `<tr class="row" tabindex="0" data-id="${x.id}" aria-selected="${S.sel===x.id}"><td class="num">${x.box?i+1:"–"}</td><td>${esc(curto(x.nome))}</td><td>${lvl(x)}</td>`+
+      `<td class="r num"><span class="tag t${x.eN}">${pct(x.efetividade)}</span></td><td class="r num"><span class="tag t${x.pN}">${fmt(x.pts)}</span></td>`+
+      `<td class="r num">${x.sup==null?"<span class='no'>pendente</span>":dec(x.sup)}</td><td class="r">${tr}</td></tr>`;
+  }).join("");
+  renderFicha(L);
+}
+const chip=(x,t)=>`<button class="chip" data-id="${x.id}" aria-pressed="${S.sel===x.id}" title="${esc(x.nome)}${t?" · "+t:""}">${esc(curto(x.nome))}</button>`;
+const lvl=x=>x.box?`<span class="lvl ${x.box.tom}">N${x.box.n}</span>`:`<span class="lvl na">?</span>`;
+
+function paraSubir(x){
+  const ret=[];
+  if(x.perf<2){
+    const passos=(x.perf===0?2:3)-x.soma, op=[];
+    if(x.efetividade!=null&&x.eN<2) op.push(`efetividade de ${pct(x.efetividade)} para <b>${pct(R.efet[x.eN])}</b>${x.eN===0?" (abaixo de 89% a campanha também desconta 10 pontos)":""}`);
+    if(x.pN<2) op.push(`pontos de ${fmt(x.pts)} para <b>${fmt(Math.ceil(R.prod[x.pN]*x.media))}</b> (${dec(R.prod[x.pN])}× a média do time no mês)`);
+    ret.push(passos>1?`Para a performance subir de faixa, precisa avançar ${passos} degraus: ${op.join(" e ")}${op.length<passos?", depois o próximo degrau do mesmo indicador":""}.`
+      :`Para a performance subir de faixa, basta um destes: ${op.join(" ou ")}.`);
+  }
+  if(x.sup!=null&&x.supB<2){
+    const alvo=R.sup[x.supB];
+    const baixos=CRITERIOS.map(k=>({...k,v:x.a.notas[k.k]})).sort((a,b)=>a.v-b.v).slice(0,2);
+    ret.push(`Média do supervisor de ${dec(x.sup)} para <b>${dec(alvo)}</b>. Pontos a trabalhar: ${baixos.map(b=>`${b.t.toLowerCase()} (${b.v})`).join(" e ")}.`);
+  }
+  if(!ret.length) ret.push("Está no nível máximo. Manter os dois eixos no próximo ciclo.");
+  return ret;
+}
+
+async function renderFicha(L){
+  const f=$("#ficha"); const x=L.find(y=>y.id===S.sel);
+  if(!x){f.hidden=true;return}
+  f.hidden=false;
+  const b=x.box;
+  const maxDet=Math.max(1,...DETALHE.map(([k])=>x.detalhe?.[k]||0));
+  const hist=Object.keys(S.ciclos).sort().map(m=>{const y=calc(m).find(z=>z.id===x.id);return y?`<div>${y.box?`<span class="lvl ${y.box.tom}">N${y.box.n}</span>`:`<span class="lvl na">?</span>`}<span>${esc((S.ciclos[m].rotulo||m).slice(0,3))}</span></div>`:""}).join("");
+  let avalPor="";
+  if(x.a?.avaliador&&S.user){const ps=await S.user.profiles([x.a.avaliador]);avalPor=ps[x.a.avaliador]?.name||"supervisor";}
+  const efPos=v=>clamp((v-0.6)/0.4)*100;
+  f.innerHTML=`
+  <div class="ficha-head">
+    <div><div class="label">Ficha do consultor · ${esc(S.ciclos[S.mes].rotulo)}</div><h3>${esc(x.nome)}</h3></div>
+    <div style="text-align:right">${b?`<span class="lvl ${b.tom}" style="height:30px;min-width:44px;font-size:14px">N${b.n}</span> <span class="box-tag" style="color:var(--${b.tom==="gold"?"accent":b.tom==="mid"?"fg":b.tom})">${b.nome}</span>`:`<span class="no">Aguardando avaliação do supervisor</span>`}
+      <div class="hist" style="margin-top:10px;justify-content:flex-end">${hist}</div></div>
+  </div>
+  ${b?`<div class="acao ${b.tom==="gold"?"":b.tom}"><div class="label" style="margin-bottom:4px">Ação definida para N${b.n}</div>${esc(b.acao)}</div>`:""}
+  <div class="cols3">
+    <div class="sub"><h4>Performance · ${BAND[x.perf]}</h4>
+      <div class="kv"><span>Efetividade</span><span class="num"><span class="tag t${x.eN}">${pct(x.efetividade)}</span></span></div>
+      <div class="meter" aria-label="Efetividade"><i style="width:${efPos(x.efetividade??0)}%;background:var(--${["bad","muted","good"][x.eN]})"></i><span class="tick" style="left:${efPos(.89)}%"></span><span class="tick" style="left:${efPos(.95)}%"></span></div>
+      <div class="note" style="font-size:12px">Marcas em 89% (meta da campanha) e 95%.</div>
+      <div class="kv" style="margin-top:10px"><span>Pontos na campanha</span><span class="num"><span class="tag t${x.pN}">${fmt(x.pts)}</span></span></div>
+      <div class="kv"><span>Média do time</span><span class="num">${fmt(x.media)} (${dec(x.ratio)}×)</span></div>
+      ${x.penalidadeEfetividade?`<div class="kv"><span>Penalidade de efetividade</span><span class="num down">−${x.penalidadeEfetividade}</span></div>`:""}
+    </div>
+    <div class="sub"><h4>Produtividade aberta</h4>
+      ${DETALHE.filter(([k])=>x.detalhe&&k in x.detalhe).map(([k,t])=>`<div style="margin-bottom:7px"><div class="kv" style="border:0;padding:0"><span>${t}</span><span class="num">${fmt(x.detalhe[k])}</span></div><div class="bar"><i style="width:${(x.detalhe[k]/maxDet)*100}%"></i></div></div>`).join("")}
+    </div>
+    <div class="sub"><h4>Avaliação do supervisor${x.sup!=null?" · "+BAND[x.supB]:""}</h4>
+      ${x.a?.notas?CRITERIOS.map(k=>`<div class="kv"><span>${k.t}</span><span class="num"><b>${x.a.notas[k.k]??"–"}</b> <span style="color:var(--muted)">/ 5</span></span></div>`).join("")+`<div class="kv"><span><b>Média</b></span><span class="num"><b>${x.sup!=null?dec(x.sup):"–"}</b></span></div>`:`<p class="note">Ainda sem avaliação neste ciclo. O supervisor preenche na aba Avaliar.</p>`}
+      ${x.a?.feedback?`<div class="label" style="margin:12px 0 4px">Feedback</div><p class="feedback">${esc(x.a.feedback)}</p>`:""}
+      ${x.a?.atualizadoEm?`<p class="note" style="font-size:12px;margin-top:8px">Avaliado${avalPor?" por "+esc(avalPor):""} em ${new Date(x.a.atualizadoEm).toLocaleDateString("pt-BR")}</p>`:""}
+    </div>
+  </div>
+  <div class="sub" style="margin-top:18px"><h4>O que precisa para subir</h4><ul class="subir">${paraSubir(x).map(t=>`<li>${t}</li>`).join("")}</ul></div>`;
+}
+
+function renderAvaliar(){
+  const L=calc(S.mes).sort((a,b)=>a.nome.localeCompare(b.nome));
+  if(!S.avSel||!L.find(x=>x.id===S.avSel)) S.avSel=(L.find(x=>!x.a)||L[0])?.id;
+  $("#avcount").textContent=`${L.filter(x=>x.a).length} de ${L.length} avaliados`;
+  $("#avlista").innerHTML=L.map(x=>`<button type="button" data-av="${x.id}" aria-current="${x.id===S.avSel}"><span>${esc(curto(x.nome))}</span>${x.a?"<span class='ok'>avaliado</span>":"<span class='no'>pendente</span>"}</button>`).join("");
+  const x=L.find(y=>y.id===S.avSel); const form=$("#avform");
+  if(!x){form.innerHTML="";return}
+  if(form.dataset.for===S.mes+"__"+x.id&&form.dataset.dirty==="1") return; // não apaga o que está sendo digitado
+  form.dataset.for=S.mes+"__"+x.id; form.dataset.dirty="0";
+  const n=x.a?.notas||{};
+  const ro=S.canWrite===false;
+  form.innerHTML=`<div class="label">Avaliando</div><h3 style="margin:2px 0 4px;font-size:24px;font-weight:900;letter-spacing:-.02em">${esc(x.nome)}</h3>
+   <p class="note" style="margin:0 0 6px">Performance no mês: efetividade ${pct(x.efetividade)} · ${fmt(x.pts)} pontos (${BAND[x.perf].toLowerCase()}). Avalie só o comportamento: a performance já vem da campanha.</p>
+   ${CRITERIOS.map(k=>`<fieldset${ro?" disabled":""}><legend>${k.t}</legend><p>${k.d}</p><div class="scale">${[1,2,3,4,5].map(v=>`<span><input type="radio" id="c-${k.k}-${v}" name="${k.k}" value="${v}"${n[k.k]===v?" checked":""}><label for="c-${k.k}-${v}"><b>${v}</b>${ESCALA[v-1]}</label></span>`).join("")}</div></fieldset>`).join("")}
+   <fieldset${ro?" disabled":""}><legend>Feedback para o consultor</legend><p>Aparece na ficha do consultor, que todo o time com acesso pode ver.</p><textarea id="fb" maxlength="1200">${esc(x.a?.feedback||"")}</textarea></fieldset>
+   <div class="actions"><button class="btn" type="submit" id="salvar"${ro?" disabled":""}>Salvar avaliação</button><span class="media-prev" id="mprev"></span><span class="msg" id="avmsg" role="status">${ro?"Você tem acesso só de leitura. Peça ao dono acesso de Contributor para avaliar.":""}</span></div>`;
+  prevMedia();
+}
+function lerForm(){const notas={};CRITERIOS.forEach(k=>{const v=document.querySelector(`input[name="${k.k}"]:checked`);if(v)notas[k.k]=+v.value});return notas}
+function prevMedia(){
+  const notas=lerForm(), v=Object.values(notas);
+  const el=$("#mprev"); if(!el) return;
+  if(v.length<CRITERIOS.length){el.innerHTML=`${v.length}/${CRITERIOS.length} critérios`;return}
+  const m=v.reduce((s,n)=>s+n,0)/v.length;
+  const x=calc(S.mes).find(y=>y.id===S.avSel); const b=BOX[band(m,R.sup)][x.perf];
+  el.innerHTML=`Média <b>${dec(m)}</b> → N${b.n} ${b.nome}`;
+}
+
+function renderRegras(){
+  const box=[...BOX].reverse().flat().sort((a,b)=>b.n-a.n);
+  $("#regras").innerHTML=`
+  <div class="panel"><h2>Como o consultor é posicionado</h2>
+   <p class="note"><b style="color:var(--fg)">Performance</b> vem da planilha de apuração da Campanha de Incentivo do mês. Efetividade e produtividade recebem nota separada de 0 a 2 e a soma define a faixa.</p>
+   <div class="tbl"><table><thead><tr><th>Indicador</th><th>Baixa (0)</th><th>Média (1)</th><th>Alta (2)</th></tr></thead><tbody>
+    <tr><td>Efetividade</td><td>&lt; 89%</td><td>89% a 94,9%</td><td>≥ 95%</td></tr>
+    <tr><td>Pontos ÷ média do time</td><td>&lt; 0,6×</td><td>0,6× a 1,19×</td><td>≥ 1,2×</td></tr>
+    <tr><td>Soma = faixa de performance</td><td>0 ou 1</td><td>2</td><td>3 ou 4</td></tr></tbody></table></div>
+   <p class="note" style="margin-top:16px"><b style="color:var(--fg)">Avaliação do supervisor</b> é a média dos ${CRITERIOS.length} critérios do formulário, de 1 a 5: abaixo de 3 é baixa, de 3 a 3,9 é média, 4 ou mais é alta.</p>
+   <p class="note">A produtividade é comparada com a média do time no mesmo mês, porque o total de pontos muda de um mês para outro. O <b style="color:var(--fg)">ranking</b> ordena por nível e, dentro do nível, por uma nota geral (metade performance, metade supervisor).</p>
+   <div class="label" style="margin:18px 0 8px">Critérios do formulário</div>
+   ${CRITERIOS.map(k=>`<div class="kv"><span><b style="font-weight:600">${k.t}</b><br><span class="note" style="font-size:12.5px">${k.d}</span></span></div>`).join("")}
+  </div>
+  <div class="panel"><h2>Ação por posição</h2><div class="tbl"><table><tbody>
+   ${box.map(b=>`<tr><td style="width:56px"><span class="lvl ${b.tom}">N${b.n}</span></td><td><b style="font-weight:700">${b.nome}</b><br><span class="note" style="font-size:13px">${esc(b.acao)}</span></td></tr>`).join("")}
+  </tbody></table></div></div>`;
+}
+
+// eventos
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-tab]");
+  if(t){S.tab=t.dataset.tab;document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",b===t));["time","avaliar","regras"].forEach(v=>$("#v-"+v).hidden=v!==S.tab);try{localStorage.setItem("9box-tab",S.tab)}catch{}return}
+  const c=e.target.closest("[data-id]");
+  if(c){S.sel=S.sel===c.dataset.id?null:c.dataset.id;renderTime();if(S.sel)$("#ficha").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});return}
+  const a=e.target.closest("[data-av]");
+  if(a){$("#avform").dataset.dirty="0";S.avSel=a.dataset.av;renderAvaliar()}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr.row")){e.target.click()}});
+$("#mes").addEventListener("change",e=>{S.mes=e.target.value;S.sel=null;$("#avform").dataset.dirty="0";render()});
+$("#avform").addEventListener("input",()=>{$("#avform").dataset.dirty="1";prevMedia();$("#avmsg").textContent=""});
+$("#avform").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const notas=lerForm(), msg=$("#avmsg");
+  if(Object.keys(notas).length<CRITERIOS.length){msg.style.color="var(--bad)";msg.textContent="Dê nota para os 5 critérios antes de salvar.";return}
+  if(!S.db){msg.textContent="Sem conexão com o banco nesta visualização.";return}
+  const btn=$("#salvar"); btn.disabled=true; msg.style.color="var(--muted)"; msg.textContent="Salvando…";
+  const id=S.mes+"__"+S.avSel;
+  try{
+    await S.db.collection("avaliacoes").doc(id).set({mes:S.mes,consultor:S.avSel,notas,feedback:$("#fb").value.trim(),avaliador:S.meId||null,atualizadoEm:new Date().toISOString()});
+    $("#avform").dataset.dirty="0"; msg.style.color="var(--good)"; msg.textContent="Avaliação salva.";
+    const L=calc(S.mes).sort((a,b)=>a.nome.localeCompare(b.nome)); const prox=L.find(x=>!x.a);
+    setTimeout(()=>{if(prox){S.avSel=prox.id;renderAvaliar()}},900);
+  }catch(err){
+    msg.style.color="var(--bad)";
+    msg.textContent=err?.code==="invalid_argument"?"Seu acesso não permite salvar. Peça ao dono acesso de Contributor.":"Não foi possível salvar agora. Tente de novo em alguns segundos.";
+    if(err?.code==="invalid_argument"){S.canWrite=false}
+  }finally{btn.disabled=S.canWrite===false}
+});
+
+(async function init(){
+  try{const t=localStorage.getItem("9box-tab");if(t)document.querySelector(`[data-tab="${t}"]`)?.click()}catch{}
+  $("#offline").hidden=false;
+  $("#offline").textContent="Carregando os ciclos da Campanha de Incentivo…";
+  const db=await window.claude?.use?.("db"); S.db=db;
+  if(!db){$("#offline").textContent="Os dados ficam no banco do claude.ai. Abra esta página pelo link do claude.ai, conectado à sua conta, para ver o time.";return}
+  const user=await window.claude.use("user"); S.user=user;
+  if(user){S.meId=await user.id(); S.canWrite=await user.can("data.write");}
+  db.collection("ciclos").onSnapshot(s=>{
+    S.ciclos=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));
+    if(!S.mes||!S.ciclos[S.mes]) S.mes=Object.keys(S.ciclos).sort().pop()||null;
+    if(!S.mes){$("#offline").textContent="Nenhum ciclo importado ainda. O primeiro entra com a planilha de apuração da Campanha de Incentivo.";}
+    render();
+  },()=>{$("#offline").textContent="Não foi possível ler os ciclos. Recarregue a página."});
+  db.collection("avaliacoes").onSnapshot(s=>{
+    S.aval=Object.fromEntries(s.docs.map(d=>[d.id,d.data()]));
+    if(S.mes) render();
+  });
+})();
+</script>
